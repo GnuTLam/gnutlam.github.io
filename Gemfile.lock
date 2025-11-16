@@ -149,6 +149,7 @@ DEPENDENCIES
   jekyll-archives (~> 2.2)
   jekyll-feed (~> 0.17)
   jekyll-paginate (~> 1.1)
+  jekyll-seo-tag (~> 2.8)
   jekyll-sitemap (~> 1.4)
   jekyll-theme-chirpy (~> 7.4, >= 7.4.1)
   tzinfo (>= 1, < 3)
