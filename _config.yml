@@ -155,6 +155,7 @@ plugins:
   - jekyll-paginate
   - jekyll-sitemap
   - jekyll-feed
+  - jekyll-seo-tag
 
 kramdown:
   footnote_backlink: "&#8617;&#xfe0e;"
