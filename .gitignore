@@ -1,7 +1,8 @@
 # Bundler cache
 .bundle
 vendor
-Gemfile.lock
+# Gemfile.lock should be committed for GitHub Actions
+# Gemfile.lock
 
 # Jekyll cache
 .jekyll-cache
@@ -17,10 +18,7 @@ package-lock.json
 
 # IDE configurations
 .idea
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
-!.vscode/tasks.json
+.vscode
 
 # Misc
 _sass/vendors
