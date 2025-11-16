@@ -28,8 +28,8 @@ url: "https://gnutlam.github.io"
 github:
   username: gnutlam # change to your GitHub username
 
-twitter:
-  username: GnutTlam # change to your Twitter username
+# twitter:
+#   username: GnutTlam # Disabled - using X link in social.links instead
 
 social:
   # Change to your full name.
