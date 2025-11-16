@@ -149,6 +149,13 @@ baseurl: ""
 
 # ------------ The following options are not recommended to be modified ------------------
 
+# Plugins (required for Chirpy theme)
+plugins:
+  - jekyll-archives
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-feed
+
 kramdown:
   footnote_backlink: "&#8617;&#xfe0e;"
   syntax_highlighter: rouge
