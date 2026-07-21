@@ -1533,7 +1533,7 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 /* the buffer: one 90ch column, centered like a maximized editor —
    paragraphs, rules, code, banner, pager all share the same right edge.
    16px here sizes the ch unit to match the 16px reader body text */
-.rd-col { position: relative; max-width: 90ch; margin-inline: auto; font-size: 16px; }
+.rd-col { position: relative; max-width: 74ch; margin-inline: auto; font-size: 16px; }
 .rd-col::after {                     /* vim colorcolumn at the buffer edge */
   content: "";
   position: absolute;
