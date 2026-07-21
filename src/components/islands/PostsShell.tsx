@@ -166,7 +166,7 @@ export default function PostsShell({ posts }: Props) {
             return (
               <a
                 key={p.id}
-                className={`pc-card${i === sel ? ' sel' : ''}`}
+                className={`p-row${i === sel ? ' sel' : ''}`}
                 data-i={i}
                 href={`/posts/${p.slug}/`}
                 style={{ '--tc': t.tone } as React.CSSProperties}
@@ -174,14 +174,16 @@ export default function PostsShell({ posts }: Props) {
                 onMouseMove={() => { if (sel !== i) setSel(i); }}
                 onFocus={() => setSel(i)}
               >
-                <h3 className="pc-title">{p.title}</h3>
-                <p className="pc-x">{p.excerpt}</p>
-                <div className="pc-meta">
-                  <span><span className="g">▤ </span>{p.date}</span>
-                  <span className="chip" style={{ '--tc': t.tone } as React.CSSProperties}>{t.title.toLowerCase()}</span>
-                  <span><span className="g">◷ </span>{p.read.toLowerCase()}</span>
-                  {p.pinned && <span className="pin" title="Pinned">★ pinned</span>}
-                </div>
+                <time dateTime={p.iso}>{p.iso}</time>
+                <span className="p-tt">
+                  <span className="p-title">
+                    {p.pinned && <span className="pin" title="Pinned">★ </span>}
+                    {p.title}
+                  </span>
+                  <span className="p-sub">{p.excerpt}</span>
+                </span>
+                <span className="chip p-cat">{t.title.toLowerCase()}</span>
+                <span className="p-read">{p.read.toLowerCase()}</span>
               </a>
             );
           })}
