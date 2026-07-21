@@ -241,7 +241,7 @@ export default function PostsShell({ posts }: Props) {
                   </a>
                 ))}
               </div>
-              <a className="btn pri pv-open" href={`/posts/${selPost.slug}/`}>
+              <a className="btn pri sm pv-open" href={`/posts/${selPost.slug}/`}>
                 $ nvim {selPost.slug}.md
               </a>
             </div>

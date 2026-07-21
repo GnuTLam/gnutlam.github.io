@@ -137,8 +137,8 @@ export default function HomeShell({ posts }: Props) {
               </div>
             </div>
             <div className="nf-cta">
-              {latest && <a className="btn pri" href={`/posts/${latest.slug}/`}>$ open --latest</a>}
-              <a className="btn" href="/about/">$ whoami</a>
+              {latest && <a className="btn pri sm" href={`/posts/${latest.slug}/`}>$ open --latest</a>}
+              <a className="btn sm" href="/about/">$ whoami</a>
             </div>
           </div>
         </Win>
