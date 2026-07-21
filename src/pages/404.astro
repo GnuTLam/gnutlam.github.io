@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { OS_FULL, pageTitle } from '../data/site';
+---
+<BaseLayout title={pageTitle('404')} description="Page not found." activeNav="main">
+  <div class="panic">
+    <h1 class="sr-only">404 — page not found</h1>
+    <pre>
+<span class="d">[    0.000000]</span> {OS_FULL} booting workspace…
+<span class="d">[    0.000404]</span> <span class="r">Kernel panic - not syncing:</span> <span class="t">VFS: unable to mount page</span>
+<span class="d">[    0.000405]</span>   requested: <span class="y" id="nf-path">/unknown</span>
+<span class="d">[    0.000406]</span>   status:    <span class="r">404 NOT FOUND</span> — unloaded, recycled, or never written
+<span class="d">[    0.000407]</span> Call Trace:
+<span class="d">[    0.000408]</span>   browse_blog+0x404/0x1000
+<span class="d">[    0.000409]</span>   handle_request+0x1a/0x40
+<span class="d">[    0.000410]</span>   <span class="d">? speculative_click+0x0/0x8</span>
+<span class="d">[    0.000411]</span> Recovery options:
+<span class="d">[    0.000412]</span>   $ <a href="/">cd ~</a>              <span class="d"># back to the main workspace</span>
+<span class="d">[    0.000413]</span>   $ <a href="/posts/">ls ~/posts</a>        <span class="d"># browse every post</span>
+<span class="d">[    0.000414]</span>   $ <a href="/tags/">grep -r tags/</a>     <span class="d"># search by tag</span>
+<span class="d">[    0.000415]</span> <span class="g">---[ press any key / tap to reboot to ~ ]---</span><span class="caret" aria-hidden></span>
+    </pre>
+  </div>
+  <script is:inline>
+    document.getElementById('nf-path').textContent = location.pathname;
+    document.addEventListener('keydown', function (e) {
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) location.href = '/';
+    });
+    document.querySelector('.panic').addEventListener('click', function (e) {
+      if (!e.target.closest('a')) location.href = '/';
+    });
+  </script>
+</BaseLayout>

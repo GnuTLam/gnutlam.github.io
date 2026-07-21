@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeShell from '../components/islands/HomeShell';
+import { getPublishedPosts } from '../data/posts';
+import { SITE } from '../data/site';
+
+const posts = await getPublishedPosts();
+
+const siteURL = Astro.site?.href ?? SITE.url;
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.domain,
+  url: siteURL,
+  description: SITE.description,
+  author: { '@type': 'Person', name: SITE.domain, url: siteURL },
+};
+---
+
+<BaseLayout
+  title={`${SITE.domain} — ${SITE.tagline}`}
+  description={SITE.description}
+  activeNav="main"
+  jsonLd={websiteJsonLd}
+>
+  <HomeShell posts={posts} client:idle />
+</BaseLayout>

@@ -1,0 +1,143 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutTerminal from '../../components/islands/AboutTerminal';
+import { SOCIALS } from '../../data/nav';
+import { getPublishedPosts } from '../../data/posts';
+import { DEV, DEV_PAL, pxSvg } from '../../data/pixel';
+import { SITE, OS_FULL, PROMPT, pageTitle } from '../../data/site';
+
+/* drafts stay browsable in dev, but the about stats only log real writes */
+const posts = (await getPublishedPosts()).filter(p => !p.draft);
+const mins = posts.reduce((n, p) => n + (parseInt(p.read, 10) || 0), 0);
+
+/* writing cadence — posts bucketed by month, first write → build month,
+   capped at the 12 most recent months */
+const ym = (d: Date) => d.toISOString().slice(0, 7);
+const byMonth = new Map<string, number>();
+for (const p of posts) byMonth.set(p.iso.slice(0, 7), (byMonth.get(p.iso.slice(0, 7)) ?? 0) + 1);
+const months: { m: string; n: number }[] = [];
+if (posts.length > 0) {
+  const cur = new Date(posts[posts.length - 1].iso.slice(0, 7) + '-01T00:00:00Z');
+  const end = ym(new Date());
+  while (ym(cur) <= end) {
+    months.push({ m: ym(cur), n: byMonth.get(ym(cur)) ?? 0 });
+    cur.setUTCMonth(cur.getUTCMonth() + 1);
+  }
+}
+const cadence = months.slice(-12);
+
+/* journal numbers for the shell's `stats` — all derived from real posts */
+let streak = 0, run = 0, idle = 0;
+for (const x of cadence) { run = x.n > 0 ? run + 1 : 0; if (run > streak) streak = run; }
+for (let i = cadence.length - 1; i >= 0 && cadence[i].n === 0; i--) idle++;
+const active = Math.max(1, cadence.length - idle);
+const STATS = {
+  posts: posts.length,
+  mins,
+  streak,
+  idle,
+  pace: (posts.length / active).toFixed(1),
+  /* ascii signal — one glyph per month */
+  spark: cadence.map(x => (x.n === 0 ? '▁' : x.n === 1 ? '▄' : '█')).join(''),
+};
+
+/* watch(1) feed — what's actually running right now */
+const NOW = [
+  { k: 'building', v: 'a crash-only agent orchestrator in Rust' },
+  { k: 'reading',  v: 'Designing Data-Intensive Applications (again)' },
+  { k: 'running',  v: 'a 1M-connection WebSocket fleet in prod' },
+];
+
+/* neofetch identity rows — the avatar block IS the whoami output */
+const ID_ROWS = [
+  { k: 'os',    v: OS_FULL },
+  { k: 'role',  v: 'IT engineer — infrastructure' },
+  { k: 'focus', v: 'payments · agents · data pipelines' },
+  { k: 'tz',    v: 'UTC+7' },
+];
+
+/* stack row deep-links into the tag pages — every name is a real tag */
+const STACK = ['rust', 'postgres', 'spark', 'linux'];
+---
+
+<BaseLayout
+  title={pageTitle('About')}
+  description="IT engineer building payments infrastructure, agent orchestrators, and high-throughput data pipelines."
+  activeNav="about"
+>
+  <div class="pg ab">
+    <section class="win focus w-id" aria-label="About">
+      <header class="win-tbar">
+        <span class="win-tbar-t"><b>~/about</b> — whoami</span>
+        <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/" title="close → main" aria-label="Close and return home"></a></span>
+      </header>
+
+      <div class="ph">
+        <h1 class="ph-title">WHO<span class="a">AMI</span><span class="caret" aria-hidden></span></h1>
+      </div>
+
+      <div class="win-body">
+        <div class="ab-idcard">
+          <span class="nf-art ab-ava" set:html={pxSvg(DEV, DEV_PAL, 204)} />
+          <div class="ab-nf">
+            <p class="nf-head"><b>{SITE.user}</b><span class="h">@{SITE.domain}</span></p>
+            <p class="nf-rule">-----------</p>
+            <div class="nf-rows">
+              {ID_ROWS.map(r => (
+                <div class="r">
+                  <span class="k" style="width: 72px">{r.k}</span>
+                  <span class="v">{r.v}</span>
+                </div>
+              ))}
+              <div class="r">
+                <span class="k" style="width: 72px">stack</span>
+                <span class="v ab-stack">{STACK.map(t => <a href={`/tags/${t}/`}>{t}</a>)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="mon-lbl"><span># bio</span></p>
+        <p class="ab-p">
+          I build the IT infrastructure other engineers never have to think about —
+          payments ledgers, agent orchestrators, and data pipelines that move terabytes
+          without melting the fleet.
+        </p>
+        <p class="ab-p">
+          This blog is my field journal: <strong>the work, written down while it's
+          still fresh</strong> — what broke at 3AM, why, and what it taught me.
+        </p>
+
+        <div class="nf-cta ab-cta">
+          <a class="btn pri" href="/posts/">$ cd ~/posts</a>
+          <a class="btn" href="/categories/">$ ls ~/categories</a>
+        </div>
+      </div>
+
+      <div class="win-status">
+        <span class="grow">{PROMPT}:~$ whoami --long</span>
+        <span>0.01s</span>
+      </div>
+    </section>
+
+    <section class="win w-side" aria-label="Interactive shell">
+      <header class="win-tbar">
+        <span class="win-tbar-t"><b>/dev/pts/0</b> — zsh</span>
+        <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><i aria-hidden></i></span>
+      </header>
+
+      <AboutTerminal
+        client:idle
+        now={NOW}
+        links={SOCIALS.map(s => ({ label: s.label.toLowerCase(), href: s.href }))}
+        posts={posts.slice(0, 8).map(p => ({ slug: p.slug, title: p.title, iso: p.iso, read: p.read }))}
+        stats={STATS}
+      />
+
+      <div class="win-status">
+        <span class="grow">status: <b>open to interesting problems</b></span>
+        <span>type <b>help</b></span>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

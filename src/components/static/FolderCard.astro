@@ -1,0 +1,37 @@
+---
+/* one folder, one look — the SAME full-width bar renders a directory at
+   every level: the tree, the "../" up entry, any future nested folder.
+   Extra attributes (aria-*, data-*) pass straight through so the
+   categories index can use it as an accordion header without a second
+   variant. */
+import { FOLDER_CLOSED, FOLDER_OPEN, FM_PAL, pxSvg } from '../../data/pixel';
+
+interface Props {
+  href: string;
+  name: string;
+  count?: string;
+  desc?: string;
+  tone?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const { href, name, count, desc, tone, class: className, ...rest } = Astro.props;
+const closed = pxSvg(FOLDER_CLOSED, FM_PAL, 30);
+const open = pxSvg(FOLDER_OPEN, FM_PAL, 30);
+---
+
+<a
+  class:list={['fm-dir', className]}
+  href={href}
+  style={tone ? `--tc: ${tone}` : undefined}
+  {...rest}
+>
+  <span class="fm-ico">
+    <span class="ico-closed" set:html={closed} />
+    <span class="ico-open" set:html={open} />
+  </span>
+  <b class="fm-name">{name}</b>
+  {desc && <span class="fm-dd">{desc}</span>}
+  {count && <span class="fm-n">{count}</span>}
+</a>

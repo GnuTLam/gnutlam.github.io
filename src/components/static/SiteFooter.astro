@@ -1,0 +1,37 @@
+---
+/* SiteFooter — a live terminal prompt line under the tiled windows.
+   Placeholder socials (href="#") stay hidden until they point somewhere real. */
+import { SOCIALS } from '../../data/nav.ts';
+import { SITE, OS_SHORT, PROMPT } from '../../data/site';
+
+const LIVE = SOCIALS.filter(s => s.href !== '#');
+const YEAR = new Date().getFullYear();
+---
+<footer class="dt-foot">
+  <span class="ps">
+    <b>{PROMPT}</b>:<span class="path" id="ft-path">~</span>$ <span id="ft-cmd">fetch --blog</span><span class="caret" aria-hidden></span>
+  </span>
+  <nav class="right" aria-label="Elsewhere">
+    <span>{OS_SHORT} · © {SITE.since}—{YEAR} · astro</span>
+    {LIVE.map(s => (
+      <a href={s.href}>{s.label.toLowerCase()}</a>
+    ))}
+  </nav>
+</footer>
+<script is:inline>
+  (function () {
+    var p = location.pathname;
+    var path = document.getElementById('ft-path');
+    var cmd = document.getElementById('ft-cmd');
+    if (p === '/' || p === '') return; /* default prompt on main */
+    var parts = p.replace(/\/$/, '').split('/').filter(Boolean);
+    /* terminal path mirrors the URL: /posts/x → ~/posts */
+    if (parts[0] === 'posts' && parts[1]) {
+      path.textContent = '~/posts';
+      cmd.textContent = 'nvim ' + parts[1] + '.md';
+    } else {
+      path.textContent = '~/' + parts.join('/');
+      cmd.textContent = 'ls -la';
+    }
+  })();
+</script>

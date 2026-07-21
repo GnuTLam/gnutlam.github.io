@@ -1,0 +1,71 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ReaderInteractive from '../../components/islands/ReaderInteractive';
+import { isPublished, toPostData } from '../../data/posts';
+import { SITE, pageTitle } from '../../data/site';
+import type { PostData } from '../../types';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('posts')).filter(isPublished);
+  const posts: PostData[] = entries
+    .map(toPostData)
+    .sort((a, b) => (a.iso < b.iso ? 1 : -1)); // newest first
+
+  return entries.map(entry => ({
+    params: { slug: entry.id },
+    props:  { entry, posts },
+  }));
+}
+
+const { entry, posts } = Astro.props;
+const source = entry.body ?? '';
+
+const post: PostData = toPostData(entry);
+
+// sorted newest→oldest — prev = newer (earlier in array), next = older (later in array)
+const idx      = posts.findIndex(p => p.slug === post.slug);
+const prevPost = idx > 0             ? posts[idx - 1] : null;
+const nextPost = idx < posts.length - 1 ? posts[idx + 1] : null;
+
+const siteURL      = Astro.site?.href ?? SITE.url;
+const canonicalURL = new URL(`/posts/${post.slug}/`, siteURL).href;
+const ogImage      = new URL('/og-default.png', siteURL).href;
+const author       = SITE.domain;
+
+const blogPostingJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.title,
+  description: post.excerpt,
+  datePublished: post.iso,
+  dateModified: post.iso,
+  author: { '@type': 'Person', name: author, url: siteURL },
+  publisher: { '@type': 'Person', name: author, url: siteURL },
+  keywords: post.tags.join(', '),
+  mainEntityOfPage: canonicalURL,
+  url: canonicalURL,
+  image: ogImage,
+};
+---
+
+<BaseLayout
+  title={pageTitle(post.title)}
+  description={post.excerpt}
+  activeNav="posts"
+  readingTitle={post.title}
+  canonical={canonicalURL}
+  ogType="article"
+  publishedTime={post.iso}
+  author={author}
+  tags={post.tags}
+  jsonLd={blogPostingJsonLd}
+>
+  <ReaderInteractive
+    post={post}
+    source={source}
+    prevPost={prevPost}
+    nextPost={nextPost}
+    client:load
+  />
+</BaseLayout>

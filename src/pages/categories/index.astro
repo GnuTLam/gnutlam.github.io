@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FolderCard from '../../components/static/FolderCard.astro';
+import FileCard from '../../components/static/FileCard.astro';
+import { TOPICS, topicOf } from '../../data/topics';
+import { getPublishedPosts } from '../../data/posts';
+import { SITE, pageTitle } from '../../data/site';
+
+const posts = await getPublishedPosts();
+const cats = TOPICS.map(t => {
+  /* topicOf, not tag-overlap: every file lives in exactly ONE directory */
+  const matches = posts
+    .filter(p => topicOf(p.tags).key === t.key)
+    .sort((a, b) => (a.iso < b.iso ? 1 : -1));
+  return { ...t, matches };
+})
+  .filter(t => t.matches.length > 0)
+  /* busiest directories first — like `du | sort -r` */
+  .sort((a, b) => b.matches.length - a.matches.length);
+---
+
+<BaseLayout
+  title={pageTitle('Categories')}
+  description={`The six IT categories of ${SITE.domain}: Rust & async, AI agents, data pipelines, scale & infra, storage, and craft.`}
+  activeNav="categories"
+>
+  <div class="pg">
+  <section class="win focus" aria-label="Categories">
+    <header class="win-tbar">
+      <span class="win-tbar-t"><b>~/categories</b> — nautilus</span>
+      <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/" title="close → main" aria-label="Close and return home"></a></span>
+    </header>
+
+    <div class="ph">
+      <h1 class="ph-title">CATE<span class="a">GORIES</span></h1>
+      <p class="ph-sub">
+        {cats.length} folders, {posts.length} files. Every post lives in exactly one category;
+        its <a href="/tags/" style="color: var(--link); text-decoration: underline">tags</a> cut across them.
+        Click a folder to open it right below.
+      </p>
+    </div>
+
+    <div class="fm">
+      <div class="fm-bar">
+        <span class="fm-nav" aria-hidden="true"><i>◂</i><i>▸</i><i>⟳</i></span>
+        <span class="fm-path"><a href="/">~</a><i aria-hidden>›</i><b>categories</b></span>
+        <span class="fm-info">{cats.length} folders · {posts.length} files</span>
+      </div>
+
+      <!-- one vertical tree: every directory is a full-width bar — the SAME
+           bar a folder gets at any depth — and clicking one expands its
+           contents right below it. Bars are LINKS so no-JS visitors still
+           land on the folder's page. -->
+      <div class="fm-tree">
+        {cats.map((c, i) => (
+          <div class="fm-node">
+            <FolderCard
+              href={`/categories/${c.key}/`}
+              name={`${c.key}/`}
+              count={`${c.matches.length}`}
+              desc={c.desc}
+              tone={c.tone}
+              id={`row-${c.key}`}
+              aria-expanded={i === 0 ? 'true' : 'false'}
+              aria-controls={`panel-${c.key}`}
+              data-key={c.key}
+            />
+            <div
+              class="fm-panel"
+              id={`panel-${c.key}`}
+              role="region"
+              aria-labelledby={`row-${c.key}`}
+              hidden={i !== 0}
+              style={`--tc: ${c.tone}`}
+            >
+              <div class="fm-files">
+                {c.matches.map(p => <FileCard post={p} />)}
+                <a class="fm-open" href={`/categories/${c.key}/`}>open {c.key}/ in its own window →</a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="win-status">
+      <span class="grow" id="fm-status"><b>{cats.length}</b> folders · <b>{posts.length}</b> files</span>
+      <span>sort: -posts</span>
+      <span>du -h: {posts.reduce((n, p) => n + (parseInt(p.read, 10) || 0), 0)} min</span>
+    </div>
+  </section>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var rows = Array.prototype.slice.call(document.querySelectorAll('.fm-dir[data-key]'));
+      var panels = Array.prototype.slice.call(document.querySelectorAll('.fm-panel'));
+      var status = document.getElementById('fm-status');
+      var statusHome = status ? status.innerHTML : '';
+      if (!rows.length || !panels.length) return;
+
+      /* key === null collapses every folder */
+      function select(key, updateHash) {
+        if (key && !document.getElementById('panel-' + key)) return;
+        rows.forEach(function (r) {
+          r.setAttribute('aria-expanded', String(r.getAttribute('data-key') === key));
+        });
+        panels.forEach(function (p) {
+          var on = p.id === 'panel-' + key;
+          p.hidden = !on;
+          /* retrigger the 2-frame swap */
+          if (on) { p.classList.remove('swap'); void p.offsetWidth; p.classList.add('swap'); }
+        });
+        if (updateHash) history.replaceState(null, '', key ? '#' + key : location.pathname);
+        if (status) {
+          status.innerHTML = key
+            ? '<b>' + rows.length + '</b> folders · open: <b>' + key + '/</b>'
+            : statusHome;
+        }
+      }
+
+      rows.forEach(function (r, i) {
+        /* a bar click expands in place; clicking the open one closes it.
+           Plain-link behavior stays for no-JS and new-tab intents. */
+        r.addEventListener('click', function (e) {
+          if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+          e.preventDefault();
+          var key = r.getAttribute('data-key');
+          var wasOpen = r.getAttribute('aria-expanded') === 'true';
+          select(wasOpen ? null : key, true);
+          if (!wasOpen) {
+            var p = document.getElementById('panel-' + key);
+            if (p) p.scrollIntoView({
+              block: 'nearest',
+              behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+            });
+          }
+        });
+        /* arrows walk the tree without opening anything */
+        r.addEventListener('keydown', function (e) {
+          if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+          e.preventDefault();
+          rows[(i + (e.key === 'ArrowDown' ? 1 : rows.length - 1)) % rows.length].focus();
+        });
+      });
+
+      /* deep link: /categories/#storage opens that folder in place */
+      var hash = location.hash.slice(1);
+      if (hash) select(hash, false);
+    })();
+  </script>
+</BaseLayout>

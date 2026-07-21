@@ -1,0 +1,128 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { TOPICS, topicOf } from '../../data/topics';
+import { getPublishedPosts } from '../../data/posts';
+import { SITE, pageTitle } from '../../data/site';
+
+const posts = await getPublishedPosts();
+
+/* every tag with its count + the tone of its parent category */
+const tagCounts = new Map<string, number>();
+for (const p of posts) for (const t of p.tags) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+const tags = [...tagCounts.entries()]
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  .map(([tag, n]) => ({
+    tag, n,
+    tone: topicOf([tag]).tone,
+    cat: topicOf([tag]),
+    s: n >= 3 ? 3 : n === 2 ? 2 : 1,
+  }));
+const max = tags[0]?.n ?? 0;
+
+/* group by parent category, in TOPICS order — reads like `tree` output */
+const groups = TOPICS
+  .map(tp => ({ tp, tags: tags.filter(t => t.cat.key === tp.key) }))
+  .filter(g => g.tags.length > 0);
+const maxG = Math.max(1, ...groups.map(g => g.tags.length));
+---
+
+<BaseLayout
+  title={pageTitle('Tags')}
+  description={`All ${tags.length} tags on ${SITE.domain} — fine-grained topics that cut across the categories.`}
+  activeNav="tags"
+>
+  <div class="pg">
+  <section class="win focus" aria-label="Tags">
+    <header class="win-tbar">
+      <span class="win-tbar-t"><b>~/tags</b> — grep -c</span>
+      <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/" title="close → main" aria-label="Close and return home"></a></span>
+    </header>
+
+    <div class="ph">
+      <h1 class="ph-title">TAG <span class="a">INDEX</span></h1>
+      <p class="ph-sub">
+        {tags.length} tags across {posts.length} posts, sized by frequency and grouped by their parent
+        <a href="/categories/" style="color: var(--link); text-decoration: underline">category</a>.
+        Open a tag to see every post carrying it.
+      </p>
+    </div>
+
+    <div class="fzf-bar" role="search">
+      <b aria-hidden>&gt;</b>
+      <input id="tag-q" placeholder="filter tags…" spellcheck="false" autocomplete="off" aria-label="Filter tags" />
+      <kbd aria-hidden>/</kbd>
+    </div>
+
+    <div class="cloud-groups">
+      {groups.map(g => (
+        <div class="cg" style={`--tc: ${g.tp.tone}`}>
+          <p class="cg-h">
+            <a href={`/categories/${g.tp.key}/`}>{g.tp.title.toLowerCase()}/</a>
+            <span class="cg-m" aria-hidden>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <i class={i < Math.max(1, Math.round((g.tags.length / maxG) * 8)) ? 'on' : ''}></i>
+              ))}
+            </span>
+            <span class="n">{g.tags.length} tag{g.tags.length === 1 ? '' : 's'}</span>
+          </p>
+          <div class="cloud">
+            {g.tags.map(t => (
+              <a class="tagchip" href={`/tags/${t.tag}/`} data-s={t.s} data-tag={t.tag} data-cat={`${g.tp.key} ${g.tp.title.toLowerCase()}`} style={`--tc: ${t.tone}`} title={`${t.cat.title} · ${t.n} post${t.n === 1 ? '' : 's'}`}>
+                <b>#{t.tag}</b><span class="n">{t.n}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+      <div class="p-empty" id="tag-empty" hidden>no tag matched — try another term.</div>
+    </div>
+
+    <div class="win-status">
+      <span class="grow" role="status"><b id="tag-count">{tags.length}</b> tag(s) · most used: <b>#{tags[0]?.tag}</b> ({max})</span>
+      <span>sort: -count</span>
+    </div>
+  </section>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var q = document.getElementById('tag-q');
+      if (!q) return;
+      var chips = [].slice.call(document.querySelectorAll('.cloud .tagchip'));
+      var groups = [].slice.call(document.querySelectorAll('.cg'));
+      var count = document.getElementById('tag-count');
+      var empty = document.getElementById('tag-empty');
+      var total = chips.length;
+      function apply() {
+        var needle = q.value.trim().toLowerCase();
+        var shown = 0;
+        chips.forEach(function (c) {
+          var hay = (c.getAttribute('data-tag') || '') + ' ' + (c.getAttribute('data-cat') || '');
+          var hit = !needle || hay.indexOf(needle) !== -1;
+          c.hidden = !hit;
+          if (hit) shown++;
+        });
+        groups.forEach(function (g) {
+          g.hidden = !g.querySelector('.tagchip:not([hidden])');
+        });
+        empty.hidden = shown > 0;
+        count.textContent = needle ? shown + '/' + total : String(total);
+      }
+      q.addEventListener('input', apply);
+      document.addEventListener('keydown', function (e) {
+        var el = document.activeElement;
+        var inField = el && /^(input|textarea|select)$/i.test(el.tagName);
+        if (e.key === '/' && !inField && !(e.ctrlKey || e.metaKey || e.altKey)) {
+          e.preventDefault();
+          q.focus();
+          return;
+        }
+        if (e.key === 'Escape' && el === q) {
+          /* fzf idiom: first Esc cancels the query, second leaves the field */
+          if (q.value) { q.value = ''; apply(); }
+          else q.blur();
+        }
+      });
+    })();
+  </script>
+</BaseLayout>

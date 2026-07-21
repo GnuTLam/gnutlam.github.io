@@ -1,0 +1,149 @@
+---
+import SEOHead from '../components/static/SEOHead.astro';
+import SiteHeader from '../components/static/SiteHeader.astro';
+import SiteFooter from '../components/static/SiteFooter.astro';
+import TweaksPanel from '../components/islands/TweaksPanel';
+import { SITE, OS_FULL } from '../data/site';
+import '../styles/theme.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  activeNav: string;
+  readingTitle?: string;
+  canonical?: string;
+  image?: string;
+  ogType?: 'website' | 'article';
+  publishedTime?: string;
+  author?: string;
+  tags?: string[];
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+const {
+  title, description, activeNav, readingTitle, canonical,
+  image, ogType, publishedTime, author, tags, jsonLd,
+} = Astro.props;
+---
+<!doctype html>
+<html lang="en" data-palette="light">
+<head>
+  <SEOHead
+    title={title}
+    description={description}
+    canonical={canonical}
+    image={image}
+    ogType={ogType}
+    publishedTime={publishedTime}
+    author={author}
+    tags={tags}
+    jsonLd={jsonLd}
+  />
+</head>
+<body data-scanlines="on">
+  <script is:inline>
+    /* resolve theme before paint: saved value or the OS preference —
+       because an OS respects the OS */
+    try {
+      var __twk = JSON.parse(localStorage.getItem('lamdev-tweaks') || '{}');
+      var __pal = __twk.palette;
+      if (__pal !== 'dark' && __pal !== 'light') {
+        __pal = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-palette', __pal);
+      if (typeof __twk.scanlines === 'boolean') {
+        document.body.setAttribute('data-scanlines', __twk.scanlines ? 'on' : 'off');
+      }
+    } catch (e) {}
+    /* workspace zoom: consume the origin the previous page stored on tab
+       click, so CSS can scale the desktop up from that point (macOS-style) */
+    try {
+      var __zraw = sessionStorage.getItem('lamos-zoom');
+      if (__zraw) {
+        sessionStorage.removeItem('lamos-zoom');
+        var __z = JSON.parse(__zraw);
+        if (__z && Date.now() - __z.t < 1600 &&
+            !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          /* origin is viewport coords → coords inside .desktop (centered,
+             max-width wrap); the desktop starts at the document top */
+          var __wrap = Math.min(1640, innerWidth * 0.965);
+          var __ox = Math.min(__wrap, Math.max(0, __z.x - (innerWidth - __wrap) / 2));
+          document.documentElement.setAttribute('data-zoom', 'in');
+          document.documentElement.style.setProperty('--zoom-ox', __ox.toFixed(0) + 'px');
+          document.documentElement.style.setProperty('--zoom-oy', Math.max(0, __z.y).toFixed(0) + 'px');
+        }
+      }
+    } catch (e) {}
+    /* CRT phosphor flash — masks the instant palette swap on theme toggle */
+    window.crtFlip = function () {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      document.body.classList.remove('crt-flip');
+      void document.body.offsetWidth;             /* reflow → retrigger if spammed */
+      document.body.classList.add('crt-flip');
+    };
+    document.addEventListener('animationend', function (e) {
+      if (e.animationName === 'crt-flip') document.body.classList.remove('crt-flip');
+    });
+    /* workspace keys: 1..5 jump between sections */
+    document.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var el = document.activeElement;
+      if (el && (/^(input|textarea|select)$/i.test(el.tagName) || el.isContentEditable)) return;
+      var routes = { '1': '/', '2': '/posts/', '3': '/categories/', '4': '/tags/', '5': '/about/' };
+      if (routes[e.key]) {
+        var wsBtn = document.querySelector('.bar-ws .ws-btn[href="' + routes[e.key] + '"]');
+        if (wsBtn && window.lamosZoomNav) window.lamosZoomNav(wsBtn, routes[e.key]);
+        else location.href = routes[e.key];
+      }
+    });
+    /* bfcache: a page restored via Back must never stay zoomed-out */
+    addEventListener('pageshow', function (e) {
+      if (e.persisted) document.documentElement.removeAttribute('data-zoom');
+    });
+  </script>
+  <a class="skip-link" href="#main">skip to content</a>
+  <span class="wall" aria-hidden>λ</span>
+  <SiteHeader active={activeNav} readingTitle={readingTitle} />
+  <main class="desktop" id="main">
+    <slot />
+  </main>
+  <SiteFooter />
+  <TweaksPanel client:idle />
+
+  <div class="boot" id="boot" aria-hidden="true"><pre id="boot-log"></pre></div>
+  <script is:inline define:vars={{ BOOT_OS: OS_FULL, BOOT_KERNEL: SITE.kernel }}>
+    /* dmesg boot sequence — once per session, skippable, honors reduced motion */
+    (function () {
+      var el = document.getElementById('boot');
+      try {
+        if (sessionStorage.getItem('lamos-booted') === '1') return;
+        sessionStorage.setItem('lamos-booted', '1');
+      } catch (e) { return; }
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      var lines = [
+        '<span class="hd">' + BOOT_OS + '</span> — kernel ' + BOOT_KERNEL,
+        '<span class="ok">[  OK  ]</span> Started top panel — workspaces <span class="hd">1..5</span>',
+        '<span class="ok">[  OK  ]</span> Bound launcher to <span class="hd">ctrl+k</span>',
+        '<span class="ok">[  OK  ]</span> Reached target <span class="hd">Graphical Interface</span>',
+      ];
+      var log = document.getElementById('boot-log');
+      var i = 0;
+      el.classList.add('on');
+      function finish() {
+        el.classList.add('done');
+        setTimeout(function () { el.remove(); }, 350);
+      }
+      var t = setInterval(function () {
+        if (i >= lines.length) { clearInterval(t); setTimeout(finish, 260); return; }
+        log.innerHTML += lines[i] + '\n';
+        i++;
+      }, 105);
+      el.addEventListener('click', function () { clearInterval(t); finish(); });
+      document.addEventListener('keydown', function skip() {
+        clearInterval(t); finish();
+        document.removeEventListener('keydown', skip);
+      });
+    })();
+  </script>
+</body>
+</html>

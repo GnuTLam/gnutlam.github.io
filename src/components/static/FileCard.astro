@@ -1,0 +1,17 @@
+---
+/* one document, one look — a plain row inside every folder: icon + title,
+   nothing else. Folders inside a folder use FolderCard, so the two row
+   kinds stay visually recursive at any depth. */
+import type { PostData } from '../../types';
+import { FILE_MD, FM_PAL, pxSvg } from '../../data/pixel';
+
+interface Props { post: PostData; }
+
+const { post: p } = Astro.props;
+const fileMd = pxSvg(FILE_MD, FM_PAL, 22);
+---
+
+<a class="fm-file" href={`/posts/${p.slug}/`}>
+  <span class="fm-ico" set:html={fileMd} />
+  <b class="fm-name">{p.pinned && <span class="pin" title="Pinned">★ </span>}{p.title}</b>
+</a>

@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { topicOf } from '../../data/topics';
+import { getPublishedPosts } from '../../data/posts';
+import { SITE, pageTitle } from '../../data/site';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const tags = [...new Set(posts.flatMap(p => p.tags))];
+  return tags.map(tag => ({
+    params: { tag },
+    props: { tag, posts: posts.filter(p => p.tags.includes(tag)) },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+const cat = topicOf([tag]);
+
+/* sibling tags — other tags used together with this one */
+const siblings = new Map<string, number>();
+for (const p of posts) for (const t of p.tags) {
+  if (t !== tag) siblings.set(t, (siblings.get(t) ?? 0) + 1);
+}
+const related = [...siblings.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+---
+
+<BaseLayout
+  title={pageTitle(`#${tag}`, 'Tags')}
+  description={`${posts.length} post${posts.length === 1 ? '' : 's'} tagged #${tag} on ${SITE.domain} (${cat.title.toLowerCase()} category).`}
+  activeNav="tags"
+>
+  <div class="pg">
+  <section class="win focus" aria-label={`Tag ${tag}`} style={`--tc: ${cat.tone}; --cv: ${cat.tone}`}>
+    <header class="win-tbar">
+      <span class="win-tbar-t"><b>~/tags/{tag}</b> — grep -rl "#{tag}"</span>
+      <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/tags/" title="close → tags" aria-label="Close and return to tags"></a></span>
+    </header>
+
+    <div class="ph">
+      <h1 class="ph-title" style={`--cv: ${cat.tone}`}>
+        <span style={`color: ${cat.tone}`}>#{tag.toUpperCase()}</span>
+      </h1>
+      <p class="ph-sub">
+        {posts.length} post{posts.length === 1 ? '' : 's'} carry this tag ·
+        filed under <a href={`/categories/${cat.key}/`} style="color: var(--link); text-decoration: underline">{cat.title.toLowerCase()}</a>
+      </p>
+    </div>
+
+    {related.length > 0 && (
+      <div class="rel">
+        <span>often appears with:</span>
+        {related.map(([t, n]) => (
+          <a class="tagchip" href={`/tags/${t}/`} style={`--tc: ${topicOf([t]).tone}`}>
+            <b>#{t}</b><span class="n">{n}</span>
+          </a>
+        ))}
+      </div>
+    )}
+
+    <div class="p-list">
+      {posts.map(p => {
+        const tp = topicOf(p.tags);
+        return (
+          <a class="p-row" href={`/posts/${p.slug}/`} style={`--tc: ${tp.tone}`}>
+            <time datetime={p.iso}>{p.iso}</time>
+            <span class="p-tt">
+              <span class="p-title">{p.pinned && <span class="pin" title="Pinned">★ </span>}{p.title}</span>
+              <span class="p-sub">{p.excerpt}</span>
+            </span>
+            <span class="chip p-cat">{tp.title.toLowerCase()}</span>
+            <span class="p-read">{p.read.toLowerCase()}</span>
+          </a>
+        );
+      })}
+    </div>
+
+    <div class="win-status">
+      <span class="grow"><b>{posts.length}</b> file(s) matched</span>
+      <a href="/tags/" style="color: var(--dim)">cd .. → all tags</a>
+    </div>
+  </section>
+  </div>
+</BaseLayout>

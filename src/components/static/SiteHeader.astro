@@ -1,0 +1,317 @@
+---
+/* SiteHeader — the LAM/OS top panel, on a diet (5 modules):
+   [▦ lam.dev = launcher] [workspaces 1..5] ··· [● focused doc] ··· [◐ theme] [clock]
+   Everything cut from the bar stays reachable via rofi / desktop icons / footer. */
+import { NAV } from '../../data/nav.ts';
+import { getPublishedPosts } from '../../data/posts';
+import { topicOf } from '../../data/topics';
+import { SITE } from '../../data/site';
+
+interface Props {
+  active: string;
+  readingTitle?: string;
+}
+const { active, readingTitle } = Astro.props;
+
+const posts = await getPublishedPosts();
+
+/* per-workspace accent (nav tone name → css var) */
+const WS_TONE: Record<string, string> = {
+  ember: 'var(--accent)', yellow: 'var(--yellow)', teal: 'var(--teal)',
+  blue: 'var(--blue)', green: 'var(--green)', magenta: 'var(--magenta)',
+};
+
+/* pixel-file icons for the tray (moved up from the desktop rail) */
+const ICO_PAL: Record<string, string> = {
+  k: '#16130d', w: '#f2ede0', y: '#e8b23c', o: '#e06428', e: '#ffffff',
+  t: '#3fbfae', g: '#9aa48f', d: '#20262e', G: '#67c860', b: '#4f9de0',
+  Y: '#ffd94f',
+};
+const ICO: Record<string, string[]> = {
+  pinned: [
+    'kkkkkkkk....', 'kwwwwwwkk...', 'kwbbbwwkwk..', 'kwwwwwwkkk..',
+    'kwbbbbwwwk..', 'kwwwwwwwwk..', 'kwbbbwwyyk..', 'kkkkkkkyyyk.', '......kyyk..',
+  ],
+  rss: [
+    'kkkkkkkkkkk.', 'kwwwwwwwwwk.', 'kwooooowwwk.', 'kwwwwwwoowk.',
+    'kwooowwwowk.', 'kwwwwowwowk.', 'kwoowwowowk.', 'kwoowwowowk.', 'kkkkkkkkkkk.',
+  ],
+  conf: [                          /* lightbulb — the theme switch */
+    '....kkkk....',
+    '..kkYYYYkk..',
+    '.kYYYYYYYYk.',
+    '.kYeeYYYYYk.',
+    '.kYeYYYYYYk.',
+    '.kYYYYYYYYk.',
+    '..kYYYYYYk..',
+    '...kYYYYk...',
+    '...kggggk...',
+    '....kggk....',
+  ],
+  trash: [
+    '...kkkkk....', 'kkkkkkkkkkk.', 'kwwwwwwwwwk.', '.kgwgwgwgk..',
+    '.kgwgwgwgk..', '.kgwgwgwgk..', '.kgwgwgwgk..', '..kkkkkkk...',
+  ],
+  /* app icons for the workspace tabs */
+  term: [
+    'kkkkkkkkkkk.', 'kdddddddddk.', 'kdGwddddddk.', 'kddGwdddddk.',
+    'kdGwddddddk.', 'kdddGGGdddk.', 'kdddddddddk.', 'kkkkkkkkkkk.',
+  ],
+  doc: [
+    'kkkkkkkk....', 'kwwwwwwkk...', 'kwbbbwwkwk..', 'kwwwwwwkkk..',
+    'kwbbbbwwwk..', 'kwwwwwwwwk..', 'kwbbbwwwwk..', 'kkkkkkkkkk..',
+  ],
+  folder: [
+    '.kkkk.......', 'kyyyykkkkkk.', 'kyyyyyyyyyk.', 'kywwwwwwwyk.',
+    'kyyyyyyyyyk.', 'kyyyyyyyyyk.', 'kkkkkkkkkkk.',
+  ],
+  tag: [
+    '....kkkkkkk.', '...kbbbbbbk.', '..kbbwwbbbk.', '.kbbwkkwbbk.',
+    'kbbbwwbbbbk.', 'kbbbbbbbbk..', '.kbbbbbbk...', '..kkkkkk....',
+  ],
+  tux: [
+    '...kkkkkk...', '..kkekkekk..', '..kkoookkk..', '.kkwwwwwwkk.',
+    'kkwwwwwwwwkk', 'kkwwwwwwwwkk', '.kwwwwwwwwk.', '.ooo.kk.ooo.',
+  ],
+};
+const APP_ICO: Record<string, string[]> = {
+  main: ICO.term, posts: ICO.doc, categories: ICO.folder, tags: ICO.tag, about: ICO.tux,
+};
+/* crop each art to its real bounding box, then stretch it to FILL the
+   square — width stays, height grows: no more squashed icons, and every
+   icon in the bar is exactly the same visual size */
+function px(cells: string[], size = 20): string {
+  let minX = 99, maxX = -1, minY = 99, maxY = -1;
+  cells.forEach((row, y) => [...row].forEach((c, x) => {
+    if (c !== '.') {
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }));
+  const rects = cells.flatMap((row, y) =>
+    [...row].map((c, x) => c === '.' ? '' : `<rect x="${x}" y="${y}" width="1" height="1" fill="${ICO_PAL[c] ?? '#000'}"/>`)
+  ).join('');
+  const vb = `${minX} ${minY} ${maxX - minX + 1} ${maxY - minY + 1}`;
+  return `<svg viewBox="${vb}" width="${size}" height="${size}" preserveAspectRatio="none" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`;
+}
+
+/* rofi is the deliberate superset: workspaces → posts → files/actions → poweroff */
+const ROFI = [
+  ...NAV.map((n, i) => ({ k: 'goto', t: `${n.label.toLowerCase()}  —  workspace ${i + 1}`, href: n.href, tc: '' })),
+  ...posts.map(p => ({
+    k: 'post',
+    t: p.title,
+    href: `/posts/${p.slug}/`,
+    tc: topicOf(p.tags).tone,
+    x: p.tags.join(' '),
+  })),
+  { k: 'feed',  t: 'rss.xml — subscribe', href: '/rss.xml', tc: '' },
+  { k: 'conf',  t: 'theme.conf — colors & scanlines', href: '!theme', tc: '' },
+  { k: 'sys',   t: 'systemctl poweroff', href: '!halt', tc: '' },
+];
+---
+<nav class="bar" aria-label="Top panel">
+  <button class="bar-menu" id="bar-menu" type="button" title="Launcher" aria-haspopup="dialog">
+    <span class="l" aria-hidden set:html={px(ICO.tux, 20)}></span>
+  </button>
+  <span class="bar-sep" aria-hidden></span>
+  <div class="bar-ws" aria-label="Workspaces">
+    {NAV.map((n) => (
+      <a
+        href={n.href}
+        class={`ws-btn${active === n.key ? ' on' : ''}`}
+        style={`--wc: ${WS_TONE[n.tone] ?? 'var(--acc)'}`}
+        title={n.label}
+        aria-current={active === n.key ? 'page' : undefined}
+      >
+        <span class="ico" aria-hidden set:html={px(APP_ICO[n.key] ?? ICO.term, 18)} />
+        <span class="t">{n.label.toLowerCase()}</span>
+      </a>
+    ))}
+  </div>
+  <div class="bar-mid" aria-hidden>
+    <span>{readingTitle ? `● ${readingTitle}` : ''}</span>
+  </div>
+  <div class="bar-tray">
+
+    <a class="bar-ico" href="/rss.xml" title="RSS feed" aria-label="RSS feed" set:html={px(ICO.rss, 24)} />
+    <span class="bar-sep" aria-hidden></span>
+    <button class="bar-ico" id="bar-conf" type="button" title="Theme" aria-label="Theme settings" set:html={px(ICO.conf, 24)} />
+    <a class="bar-ico" href="/dev-null/" title="Recycle bin" aria-label="Recycle bin" set:html={px(ICO.trash, 24)} />
+    <span class="bar-sep" aria-hidden></span>
+    <span class="bar-seg s-clock" id="bar-clock" aria-hidden></span>
+  </div>
+</nav>
+
+<div class="rofi" id="rofi" role="dialog" aria-label="Launcher" aria-modal="true">
+  <div class="rofi-box">
+    <div class="rofi-input">
+      <b aria-hidden>run:</b>
+      <input id="rofi-q" placeholder="jump to a workspace or search posts…" spellcheck="false" autocomplete="off" aria-label="Search" />
+    </div>
+    <div class="rofi-list" id="rofi-list" role="listbox"></div>
+    <div class="rofi-hint" aria-hidden>
+      <span><b>↑↓</b> select</span><span><b>↵</b> open</span><span><b>esc</b> close</span>
+    </div>
+  </div>
+</div>
+
+<div class="halt" id="halt" role="button" tabindex="-1">
+  <pre>[  OK  ] Reached target Power-Off.</pre>
+  <b>System halted.</b>
+  <span style="font-size:0.8em; opacity:0.7">(click anywhere to reboot {SITE.osName})</span>
+</div>
+
+<script is:inline set:html={`window.__ROFI = ${JSON.stringify(ROFI)};`}></script>
+<script is:inline>
+  (function () {
+    var overlay = document.getElementById('rofi');
+    var q = document.getElementById('rofi-q');
+    var list = document.getElementById('rofi-list');
+    var halt = document.getElementById('halt');
+    var data = window.__ROFI || [];
+    var sel = 0;
+    var shown = [];
+
+    function openTweaks() { window.dispatchEvent(new CustomEvent('tweaks:toggle')); }
+
+    /* macOS-style workspace zoom, both directions: remember where the tab
+       sits (for the incoming page), shrink this page into it, navigate */
+    function zoomFrom(el) {
+      if (!el) return;
+      var r = el.getBoundingClientRect();
+      try {
+        sessionStorage.setItem('lamos-zoom', JSON.stringify({
+          x: r.left + r.width / 2, y: r.top + r.height / 2, t: Date.now()
+        }));
+      } catch (e) {}
+    }
+    var zooming = false;
+    function zoomNav(el, href) {
+      if (!el || !href) return;
+      zoomFrom(el);
+      if (zooming) return;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        location.href = href;
+        return;
+      }
+      zooming = true;
+      var html = document.documentElement;
+      var r = el.getBoundingClientRect();
+      var wrap = Math.min(1640, innerWidth * 0.965);
+      var ox = Math.min(wrap, Math.max(0, r.left + r.width / 2 - (innerWidth - wrap) / 2));
+      html.style.setProperty('--zoom-ox', ox.toFixed(0) + 'px');
+      html.style.setProperty('--zoom-oy', (scrollY + r.top + r.height / 2).toFixed(0) + 'px');
+      html.setAttribute('data-zoom', 'out');
+      setTimeout(function () { location.href = href; }, 170);
+    }
+    window.lamosZoomNav = zoomNav;
+    [].forEach.call(document.querySelectorAll('.bar-ws .ws-btn'), function (a) {
+      a.addEventListener('click', function (e) {
+        /* modified clicks (new tab etc.) keep native behavior — only the
+           incoming side of the zoom applies there */
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+          zoomFrom(a);
+          return;
+        }
+        e.preventDefault();
+        zoomNav(a, a.getAttribute('href'));
+      });
+    });
+
+    function run(item) {
+      close();
+      if (item.href === '!theme') { openTweaks(); return; }
+      if (item.href === '!halt') { halt.classList.add('on'); return; }
+      if (item.k === 'goto') {
+        var wsBtn = document.querySelector('.bar-ws .ws-btn[href="' + item.href + '"]');
+        if (wsBtn) { zoomNav(wsBtn, item.href); return; }
+      }
+      location.href = item.href;
+    }
+    function render() {
+      var needle = q.value.trim().toLowerCase();
+      shown = data.filter(function (it) {
+        return !needle ||
+          it.t.toLowerCase().indexOf(needle) !== -1 ||
+          (it.x || '').toLowerCase().indexOf(needle) !== -1;
+      });
+      if (sel >= shown.length) sel = Math.max(0, shown.length - 1);
+      list.innerHTML = '';
+      if (!shown.length) {
+        var d = document.createElement('div');
+        d.className = 'rofi-empty';
+        d.textContent = 'no match — try another term';
+        list.appendChild(d);
+        return;
+      }
+      shown.forEach(function (it, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'rofi-item' + (i === sel ? ' sel' : '');
+        b.setAttribute('role', 'option');
+        if (it.tc) b.style.setProperty('--tc', it.tc);
+        b.innerHTML = '<span class="k"></span><span class="t"></span>';
+        b.querySelector('.k').textContent = it.k;
+        b.querySelector('.t').textContent = it.t;
+        b.addEventListener('click', function () { run(it); });
+        list.appendChild(b);
+      });
+      var cur = list.children[sel];
+      if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' });
+    }
+    function open() {
+      overlay.classList.add('open');
+      q.value = '';
+      sel = 0;
+      render();
+      setTimeout(function () { q.focus(); }, 0);
+    }
+    function close() { overlay.classList.remove('open'); }
+
+    document.getElementById('bar-menu').addEventListener('click', function (e) {
+      e.stopPropagation();
+      overlay.classList.contains('open') ? close() : open();
+    });
+    overlay.addEventListener('mousedown', function (e) {
+      if (e.target === overlay) close();
+    });
+    q.addEventListener('input', function () { sel = 0; render(); });
+    q.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(shown.length - 1, sel + 1); render(); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); sel = Math.max(0, sel - 1); render(); }
+      if (e.key === 'Enter' && shown[sel]) { e.preventDefault(); run(shown[sel]); }
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        overlay.classList.contains('open') ? close() : open();
+      }
+      if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+    });
+
+    halt.addEventListener('click', function () { halt.classList.remove('on'); });
+    document.getElementById('bar-conf').addEventListener('click', openTweaks);
+
+    /* Windows-style clock: "9:41 PM" over "07/09/2026" */
+    var clock = document.getElementById('bar-clock');
+    function tick() {
+      var d = new Date();
+      var h = d.getHours();
+      var ap = h >= 12 ? 'PM' : 'AM';
+      var h12 = h % 12 || 12;
+      var time = h12 + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + ap;
+      var date =
+        String(d.getMonth() + 1).padStart(2, '0') + '/' +
+        String(d.getDate()).padStart(2, '0') + '/' +
+        d.getFullYear();
+      clock.innerHTML = '<b></b><span></span>';
+      clock.firstChild.textContent = time;
+      clock.lastChild.textContent = date;
+    }
+    tick();
+    setInterval(tick, 15000);
+  })();
+</script>

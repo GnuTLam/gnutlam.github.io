@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FolderCard from '../../components/static/FolderCard.astro';
+import FileCard from '../../components/static/FileCard.astro';
+import { TOPICS, topicOf } from '../../data/topics';
+import { getPublishedPosts } from '../../data/posts';
+import { pageTitle } from '../../data/site';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const cats = TOPICS
+    /* topicOf, not tag-overlap — must agree with the categories window */
+    .map(t => ({ ...t, matches: posts.filter(p => topicOf(p.tags).key === t.key) }))
+    .filter(t => t.matches.length > 0)
+    /* busiest first — same order as the categories window's sidebar */
+    .sort((a, b) => b.matches.length - a.matches.length);
+  /* the places sidebar lists every sibling folder, like a real nautilus */
+  const siblings = cats.map(c => ({ key: c.key, tone: c.tone, desc: c.desc, count: c.matches.length }));
+  return cats.map(t => ({ params: { key: t.key }, props: { cat: t, posts: t.matches, siblings } }));
+}
+
+const { cat, posts, siblings } = Astro.props;
+const sorted = [...posts].sort((a, b) => (a.iso < b.iso ? 1 : -1));
+const mins = posts.reduce((n, p) => n + (parseInt(p.read, 10) || 0), 0);
+
+/* tags actually used by posts in this category, with counts */
+const tagCounts = new Map<string, number>();
+for (const p of posts) for (const t of p.tags) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+const usedTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<BaseLayout
+  title={pageTitle(cat.title, 'Categories')}
+  description={`${cat.desc} — ${posts.length} posts in the ${cat.title.toLowerCase()} category.`}
+  activeNav="categories"
+>
+  <div class="pg">
+  <section class="win focus" aria-label={cat.title} style={`--tc: ${cat.tone}; --cv: ${cat.tone}`}>
+    <header class="win-tbar">
+      <span class="win-tbar-t"><b>~/categories/{cat.key}</b> — nautilus</span>
+      <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/categories/" title="close → categories" aria-label="Close and return to categories"></a></span>
+    </header>
+
+    <div class="ph">
+      <h1 class="ph-title" style={`--cv: ${cat.tone}`}>
+        <span style={`color: ${cat.tone}`}>{cat.title}</span>
+      </h1>
+      <p class="ph-sub">{cat.desc}</p>
+    </div>
+
+    <div class="fm">
+      <div class="fm-bar">
+        <span class="fm-nav"><a href="/categories/" title="Back to all categories" aria-label="Back to all categories">◂</a><i aria-hidden>▸</i><i aria-hidden>⟳</i></span>
+        <span class="fm-path"><a href="/">~</a><i aria-hidden>›</i><a href="/categories/">categories</a><i aria-hidden>›</i><b>{cat.key}</b></span>
+        <span class="fm-info">{posts.length} file{posts.length === 1 ? '' : 's'} · {mins} min</span>
+      </div>
+
+      <!-- the same vertical tree as the categories window: "../" on top,
+           every sibling folder as a bar, and the current one expanded with
+           its contents right below it -->
+      <div class="fm-tree">
+        <FolderCard class="fm-up" href="/categories/" name="../" desc="back to all categories" />
+        {siblings.map(s => (
+          <div class="fm-node">
+            <FolderCard
+              href={`/categories/${s.key}/`}
+              name={`${s.key}/`}
+              count={`${s.count}`}
+              desc={s.desc}
+              tone={s.tone}
+              aria-current={s.key === cat.key ? 'page' : undefined}
+            />
+            {s.key === cat.key && (
+              <div class="fm-panel">
+                <div class="fm-files">
+                  {sorted.map(p => <FileCard post={p} />)}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div class="rel">
+        <span>tags in here:</span>
+        {usedTags.map(([tag, n]) => (
+          <a class="tagchip" href={`/tags/${tag}/`} style={`--tc: ${topicOf([tag]).tone}`}>
+            <b>#{tag}</b><span class="n">{n}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="win-status">
+      <span class="grow"><b>{posts.length}</b> post(s) in {cat.key}/</span>
+      <a href="/categories/" style="color: var(--dim)">cd .. → all categories</a>
+    </div>
+  </section>
+  </div>
+</BaseLayout>

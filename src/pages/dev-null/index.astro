@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { PROMPT, pageTitle } from '../../data/site';
+---
+<BaseLayout title={pageTitle('/dev/null')} description="Nothing survives here." activeNav="devnull">
+  <div style="max-width: 720px; margin: 0 auto; min-height: calc(100vh - var(--barh) - 180px); display: grid; align-content: center">
+    <section class="win focus" aria-label="/dev/null">
+      <header class="win-tbar">
+        <span class="win-tbar-t"><b>/dev/null</b> — ls</span>
+        <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/" title="close → main" aria-label="Close and return home"></a></span>
+      </header>
+      <div class="win-body" style="font-family: var(--mono)">
+        <p class="ph-path" style="margin: 0 0 10px"><b>{PROMPT}</b>:/$ ls -la /dev/null</p>
+        <p style="margin: 0 0 18px; color: var(--dim)">total 0</p>
+        <p style="margin: 0 0 6px; color: var(--dim)">
+          Every deleted draft, every abandoned take, every <span style="color: var(--accent)">rm -rf</span> regret — it all ends up here.
+        </p>
+        <p style="margin: 0 0 22px; color: var(--mute)">
+          (Nothing survives. The posts that did are in <a href="/posts/" style="color: var(--link); text-decoration: underline">~/posts</a>.)
+        </p>
+        <a class="btn pri" href="/">$ cd ~</a>
+      </div>
+      <div class="win-status">
+        <span class="grow">0 file(s), 0 byte(s)</span>
+        <span>emptier than expected</span>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
