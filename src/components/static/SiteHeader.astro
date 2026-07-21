@@ -200,7 +200,7 @@ const ROFI = [
       zooming = true;
       var html = document.documentElement;
       var r = el.getBoundingClientRect();
-      var wrap = Math.min(1640, innerWidth * 0.965);
+      var wrap = Math.min(1440, innerWidth * 0.965);
       var ox = Math.min(wrap, Math.max(0, r.left + r.width / 2 - (innerWidth - wrap) / 2));
       html.style.setProperty('--zoom-ox', ox.toFixed(0) + 'px');
       html.style.setProperty('--zoom-oy', (scrollY + r.top + r.height / 2).toFixed(0) + 'px');
@@ -295,7 +295,7 @@ const ROFI = [
     halt.addEventListener('click', function () { halt.classList.remove('on'); });
     document.getElementById('bar-conf').addEventListener('click', openTweaks);
 
-    /* Windows-style clock: "9:41 PM" over "07/09/2026" */
+    /* one-line clock: "9:41 PM · 07/09" — the year is on the footer */
     var clock = document.getElementById('bar-clock');
     function tick() {
       var d = new Date();
@@ -305,11 +305,10 @@ const ROFI = [
       var time = h12 + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + ap;
       var date =
         String(d.getMonth() + 1).padStart(2, '0') + '/' +
-        String(d.getDate()).padStart(2, '0') + '/' +
-        d.getFullYear();
+        String(d.getDate()).padStart(2, '0');
       clock.innerHTML = '<b></b><span></span>';
       clock.firstChild.textContent = time;
-      clock.lastChild.textContent = date;
+      clock.lastChild.textContent = '· ' + date;
     }
     tick();
     setInterval(tick, 15000);

@@ -17,8 +17,9 @@ export default function PostsShell({ posts }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  /* counted the same way the filter cuts (topicOf) — counts match results */
   const cats = useMemo(
-    () => TOPICS.map(t => ({ ...t, n: posts.filter(p => p.tags.some(tag => t.tags.includes(tag))).length }))
+    () => TOPICS.map(t => ({ ...t, n: posts.filter(p => topicOf(p.tags).key === t.key).length }))
       .filter(t => t.n > 0),
     [posts]
   );

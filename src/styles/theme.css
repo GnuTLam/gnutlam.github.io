@@ -51,7 +51,8 @@
   --px:   "Bold Pixels", "Courier New", monospace;
   --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
 
-  --wrap: min(1640px, 96.5vw);       /* the ONE width authority          */
+  --wrap: min(1440px, 96.5vw);       /* the ONE width authority          */
+  --fs-display: clamp(26px, 4vw, 40px);  /* every pixel display heading  */
   --barh: 48px;                      /* top panel height                 */
   --gap: clamp(16px, 1.8vw, 24px);   /* tiling gaps (8px scale)          */
 }
@@ -414,7 +415,8 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   max-width: var(--wrap);
   width: 100%;
   margin: 0 auto;
-  padding: 0 clamp(12px, 3vw, 32px) 24px;  /* gutter matches .desktop exactly */
+  padding: 12px clamp(12px, 3vw, 32px) 24px;  /* gutter matches .desktop exactly */
+  border-top: 1px solid var(--line);          /* anchors the page's end   */
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -569,10 +571,9 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   border: 1px solid var(--line2);
 }
 .bar-seg.s-clock {
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  gap: 0;
+  gap: 8px;
   padding: 0 12px;
   line-height: 1.35;
   background: var(--panel2);
@@ -729,6 +730,8 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   border-left: 2px solid transparent;
 }
 .p-row + .p-row { border-top: 1px dashed color-mix(in srgb, var(--line2) 55%, transparent); }
+/* a pinned post is featured from across the room, not just by its star */
+.p-row:has(.pin) { background: color-mix(in srgb, var(--acc) 6%, transparent); }
 .p-row time, .p-date { font-size: 11.5px; color: var(--mute); white-space: nowrap; }
 .p-row time { grid-column: 1; grid-row: 2; }
 .p-row time::before { content: '└─ '; color: color-mix(in srgb, var(--mute) 60%, transparent); }
@@ -808,7 +811,7 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   margin: 0 0 8px;
   font-family: var(--px);
   font-weight: 400;
-  font-size: clamp(26px, 4vw, 40px);
+  font-size: var(--fs-display);
   line-height: 1;
   color: var(--text);
   text-shadow: 3px 3px 0 color-mix(in srgb, var(--cv, var(--acc)) 26%, transparent);
@@ -1430,6 +1433,7 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .ab-cta { margin-top: 16px; }
 /* stack row separators live in CSS; inline-block keeps them clear of the
    link underline */
+.ab-stack a { display: inline-block; }   /* dot + word wrap as one unit */
 .ab-stack a + a::before {
   content: "·";
   display: inline-block;
@@ -1520,7 +1524,7 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   margin: 8px 0 12px;
   font-family: var(--px);
   font-weight: 400;
-  font-size: clamp(25px, 4.2vw, 40px);
+  font-size: var(--fs-display);
   line-height: 1.08;
   color: var(--text);
   text-shadow: 3px 3px 0 color-mix(in srgb, var(--cv, var(--acc)) 28%, transparent);

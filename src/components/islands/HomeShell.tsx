@@ -94,8 +94,9 @@ export default function HomeShell({ posts }: Props) {
   }, [posts, needle]);
   const visible = needle ? filtered : filtered.slice(0, RECENT);
 
+  /* one post = one category (topicOf), so the bars sum to the post count */
   const cats = useMemo(
-    () => TOPICS.map(t => ({ ...t, n: posts.filter(p => p.tags.some(tag => t.tags.includes(tag))).length }))
+    () => TOPICS.map(t => ({ ...t, n: posts.filter(p => topicOf(p.tags).key === t.key).length }))
       .filter(t => t.n > 0),
     [posts]
   );
@@ -207,7 +208,7 @@ export default function HomeShell({ posts }: Props) {
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="fuzzy-find a post by title, tag, or topic…"
+            placeholder="filter posts by title, tag, or category…"
             spellCheck={false}
             autoComplete="off"
             aria-label="Search posts"

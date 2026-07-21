@@ -65,7 +65,7 @@ const {
             !matchMedia('(prefers-reduced-motion: reduce)').matches) {
           /* origin is viewport coords → coords inside .desktop (centered,
              max-width wrap); the desktop starts at the document top */
-          var __wrap = Math.min(1640, innerWidth * 0.965);
+          var __wrap = Math.min(1440, innerWidth * 0.965);
           var __ox = Math.min(__wrap, Math.max(0, __z.x - (innerWidth - __wrap) / 2));
           document.documentElement.setAttribute('data-zoom', 'in');
           document.documentElement.style.setProperty('--zoom-ox', __ox.toFixed(0) + 'px');
