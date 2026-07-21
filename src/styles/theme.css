@@ -154,20 +154,6 @@ img, svg { max-width: 100%; }
 }
 .skip-link:focus { transform: none; }
 
-/* ---- desktop wallpaper watermark -------------------------------------- */
-.wall {
-  position: fixed;
-  right: -0.06em;
-  bottom: -0.28em;
-  z-index: 0;
-  font-family: var(--px);
-  font-size: clamp(240px, 40vh, 520px);
-  line-height: 1;
-  color: var(--acc);
-  opacity: 0.055;
-  pointer-events: none;
-  user-select: none;
-}
 .desktop, .dt-foot { position: relative; z-index: 1; }
 
 /* ---- CRT mode-switch flash (theme toggle) ------------------------------- */
@@ -2389,7 +2375,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   .bar-ico { display: none; }        /* tray files hide; rofi still lists them */
   #bar-conf { display: inline-flex; }   /* …except the theme switch */
   .bar-tray .bar-sep { display: none; } /* no orphan separators */
-  .wall { font-size: 200px; opacity: 0.04; }
   .p-cat { grid-row: 2; align-self: end; }
   .p-read { display: none; }
   .prg { display: none; }
