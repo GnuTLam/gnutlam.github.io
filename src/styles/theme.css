@@ -1508,17 +1508,8 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
    paragraphs, rules, code, banner, pager all share the same right edge.
    16px here sizes the ch unit to match the 16px reader body text */
 .rd-col { position: relative; max-width: 74ch; margin-inline: auto; font-size: 16px; }
-.rd-col::after {                     /* vim colorcolumn at the buffer edge */
-  content: "";
-  position: absolute;
-  top: 0; bottom: 0;
-  right: -2.5ch;
-  width: 1px;
-  background: color-mix(in srgb, var(--line2) 55%, transparent);
-  pointer-events: none;
-}
 @media (max-width: 1100px) {
-  .rd-paper::before, .rd-col::after { display: none; }
+  .rd-paper::before { display: none; }
 }
 .rd-title {
   margin: 8px 0 12px;
