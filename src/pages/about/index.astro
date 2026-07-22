@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import AboutTerminal from '../../components/islands/AboutTerminal';
 import { SOCIALS } from '../../data/nav';
 import { getPublishedPosts } from '../../data/posts';
-import { DEV, DEV_PAL, pxSvg } from '../../data/pixel';
+import { HACKER, HACKER_PAL, pxSvg } from '../../data/pixel';
 import { SITE, OS_FULL, PROMPT, pageTitle } from '../../data/site';
 
 /* drafts stay browsable in dev, but the about stats only log real writes */
@@ -78,7 +78,7 @@ const STACK = ['rust', 'postgres', 'spark', 'linux'];
 
       <div class="win-body">
         <div class="ab-idcard">
-          <span class="nf-art ab-ava" set:html={pxSvg(DEV, DEV_PAL, 204)} />
+          <span class="nf-art ab-ava" set:html={pxSvg(HACKER, HACKER_PAL, 204)} />
           <div class="ab-nf">
             <p class="nf-head"><b>{SITE.user}</b><span class="h">@{SITE.domain}</span></p>
             <p class="nf-rule">-----------</p>

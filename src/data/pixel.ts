@@ -20,26 +20,30 @@ export const TUX = [
   '.ooo.kk.ooo.',
 ];
 
-/* the human behind the OS — headphones on, hoodie in phosphor amber */
-export const DEV_PAL: Record<string, string> = {
-  k: '#1b1b1b', h: '#4e3a2a', s: '#e8c39e', o: '#f0a63a', w: '#f2f2ea',
+/* the operator behind the OS — hooded skeleton hacker, amber headphones
+   arcing over the hood into chunky ear pads, glowing amber pupils */
+export const HACKER_PAL: Record<string, string> = {
+  k: '#1b1b1b', h: '#2e343d', w: '#f2f2ea', s: '#c9c2ae', o: '#f0a63a',
 };
 
-export const DEV = [
-  '...kkkkkk...',
-  '..khhhhhhk..',
-  '.khhhhhhhhk.',
-  'kkhhhhhhhhkk',
-  'oohsssssshoo',
-  'oossksskssoo',
-  'oossssssssoo',
-  '..ssssssss..',
-  '...ssssss...',
-  '.ooossssooo.',
-  'oooowoowoooo',
-  'oooowoowoooo',
-  'oooooooooooo',
-  'oooooooooooo',
+export const HACKER = [
+  '....oooooooo....',
+  '...okkkkkkkko...',
+  '..okhhhhhhhhko..',
+  '.okhhhhhhhhhhko.',
+  'oohhkkkkkkkkhhoo',
+  'oohkkwwwwwwkkhoo',
+  'oohkwwwwwwwwkhoo',
+  'oohkwkkwwkkwkhoo',
+  'oohkwkowwokwkhoo',
+  'khhkswwkkwwskhhk',
+  'khhkswwwwwwskhhk',
+  'khhkwwkwwkwwkhhk',
+  'khhkkwkwwkwkkhhk',
+  'khhhkkkkkkkkhhhk',
+  'khhhhhohhohhhhhk',
+  'khhhhhohhohhhhhk',
+  'khhhhhhhhhhhhhhk',
 ];
 
 /* file-manager icons — folder tab + body, and an .md document.
