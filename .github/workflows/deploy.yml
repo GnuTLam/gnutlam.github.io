@@ -1,0 +1,44 @@
+# Build & deploy to GitHub Pages on every push to master.
+# One-time setup on GitHub:
+#   1. Settings → Pages → Source: "GitHub Actions"
+#   2. (Optional) Settings → Secrets and variables → Actions → Variables:
+#      SITE_URL  = https://<username>.github.io  (or custom domain)
+#      BASE_PATH = /            (or /repo-name for a project site)
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL }}
+      BASE_PATH: ${{ vars.BASE_PATH }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build with Astro
+        uses: withastro/action@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
