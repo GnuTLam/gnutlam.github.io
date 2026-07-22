@@ -21,7 +21,7 @@ const cats = TOPICS.map(t => {
 
 <BaseLayout
   title={pageTitle('Categories')}
-  description={`The six IT categories of ${SITE.domain}: Rust & async, AI agents, data pipelines, scale & infra, storage, and craft.`}
+  description={`The ${cats.length} IT categories of ${SITE.domain}: ${cats.map(c => c.title.toLowerCase()).join(', ')}.`}
   activeNav="categories"
 >
   <div class="pg">

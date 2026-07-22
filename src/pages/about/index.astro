@@ -5,6 +5,7 @@ import { SOCIALS } from '../../data/nav';
 import { getPublishedPosts } from '../../data/posts';
 import { HACKER, HACKER_PAL, pxSvg } from '../../data/pixel';
 import { SITE, OS_FULL, PROMPT, pageTitle } from '../../data/site';
+import { ABOUT, em } from '../../data/content';
 
 /* drafts stay browsable in dev, but the about stats only log real writes */
 const posts = (await getPublishedPosts()).filter(p => !p.draft);
@@ -41,28 +42,18 @@ const STATS = {
   spark: cadence.map(x => (x.n === 0 ? '▁' : x.n === 1 ? '▄' : '█')).join(''),
 };
 
-/* watch(1) feed — what's actually running right now */
-const NOW = [
-  { k: 'building', v: 'a crash-only agent orchestrator in Rust' },
-  { k: 'reading',  v: 'Designing Data-Intensive Applications (again)' },
-  { k: 'running',  v: 'a 1M-connection WebSocket fleet in prod' },
-];
-
-/* neofetch identity rows — the avatar block IS the whoami output */
+/* neofetch identity rows — copy lives in data/content.ts */
 const ID_ROWS = [
   { k: 'os',    v: OS_FULL },
-  { k: 'role',  v: 'IT engineer — infrastructure' },
-  { k: 'focus', v: 'payments · agents · data pipelines' },
-  { k: 'tz',    v: 'UTC+7' },
+  { k: 'role',  v: ABOUT.role },
+  { k: 'focus', v: ABOUT.focus },
+  { k: 'tz',    v: ABOUT.tz },
 ];
-
-/* stack row deep-links into the tag pages — every name is a real tag */
-const STACK = ['rust', 'postgres', 'spark', 'linux'];
 ---
 
 <BaseLayout
   title={pageTitle('About')}
-  description="IT engineer building payments infrastructure, agent orchestrators, and high-throughput data pipelines."
+  description={ABOUT.description}
   activeNav="about"
 >
   <div class="pg ab">
@@ -91,22 +82,16 @@ const STACK = ['rust', 'postgres', 'spark', 'linux'];
               ))}
               <div class="r">
                 <span class="k" style="width: 72px">stack</span>
-                <span class="v ab-stack">{STACK.map(t => <a href={`/tags/${t}/`}>{t}</a>)}</span>
+                <span class="v ab-stack">{ABOUT.stack.map(t => <a href={`/tags/${t}/`}>{t}</a>)}</span>
               </div>
             </div>
           </div>
         </div>
 
         <p class="mon-lbl"><span># bio</span></p>
-        <p class="ab-p">
-          I build the IT infrastructure other engineers never have to think about —
-          payments ledgers, agent orchestrators, and data pipelines that move terabytes
-          without melting the fleet.
-        </p>
-        <p class="ab-p">
-          This blog is my field journal: <strong>the work, written down while it's
-          still fresh</strong> — what broke at 3AM, why, and what it taught me.
-        </p>
+        {ABOUT.bio.map(p => (
+          <p class="ab-p">{em(p).map(s => s.b ? <strong>{s.t}</strong> : s.t)}</p>
+        ))}
 
         <div class="nf-cta ab-cta">
           <a class="btn pri" href="/posts/">$ cd ~/posts</a>
@@ -128,14 +113,14 @@ const STACK = ['rust', 'postgres', 'spark', 'linux'];
 
       <AboutTerminal
         client:idle
-        now={NOW}
+        now={ABOUT.now}
         links={SOCIALS.map(s => ({ label: s.label.toLowerCase(), href: s.href }))}
         posts={posts.slice(0, 8).map(p => ({ slug: p.slug, title: p.title, iso: p.iso, read: p.read }))}
         stats={STATS}
       />
 
       <div class="win-status">
-        <span class="grow">status: <b>open to interesting problems</b></span>
+        <span class="grow">status: <b>{ABOUT.status}</b></span>
         <span>type <b>help</b></span>
       </div>
     </section>

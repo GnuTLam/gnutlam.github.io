@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { TOPICS, topicOf } from '../../data/topics';
 import { TUX, TUX_PAL, pxSvg } from '../../data/pixel';
 import { SITE, OS_FULL, PROMPT } from '../../data/site';
+import { HOME, em } from '../../data/content';
 import type { PostData } from '../../types';
 
 const RECENT = 6;
@@ -114,13 +115,12 @@ export default function HomeShell({ posts }: Props) {
         >
           <div className="win-body">
             <h1 className="nf-title">
-              IT FIELD NOTES,<br />
-              <span className="a">COMPILED FROM SOURCE</span><span className="caret" aria-hidden></span>
+              {HOME.title}<br />
+              <span className="a">{HOME.titleAccent}</span><span className="caret" aria-hidden></span>
             </h1>
             <p className="nf-lede">
-              <b>{SITE.domain}</b> is an information-technology journal running on {SITE.osName}:
-              systems, networks, infrastructure, and code. Deep-dives, 3AM post-mortems,
-              and the occasional manifesto — <b>no sponsored content, no AI summaries.</b>
+              <b>{SITE.domain}</b>{' '}
+              {em(HOME.lede).map((s, i) => s.b ? <b key={i}>{s.t}</b> : <span key={i}>{s.t}</span>)}
             </p>
             <div className="nf">
               <span className="nf-art" dangerouslySetInnerHTML={{ __html: pxSvg(TUX, TUX_PAL, 120) }} />
@@ -131,9 +131,9 @@ export default function HomeShell({ posts }: Props) {
                   <div className="r"><span className="k">OS</span><span className="v">{OS_FULL} x86_64</span></div>
                   <div className="r"><span className="k">Kernel</span><span className="v">{SITE.kernel}</span></div>
                   <div className="r"><span className="k">Uptime</span><span className="v">writing since {SITE.since}</span></div>
-                  <div className="r"><span className="k">Shell</span><span className="v">zsh 5.9</span></div>
+                  <div className="r"><span className="k">Shell</span><span className="v">{HOME.shell}</span></div>
                   <div className="r"><span className="k">Packages</span><span className="v"><a href="/posts/">{posts.length} posts</a> · <a href="/categories/">{cats.length} categories</a> · <a href="/tags/">{tagCount} tags</a></span></div>
-                  <div className="r"><span className="k">Editor</span><span className="v">nvim (btw)</span></div>
+                  <div className="r"><span className="k">Editor</span><span className="v">{HOME.editor}</span></div>
                 </div>
               </div>
             </div>
