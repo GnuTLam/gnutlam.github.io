@@ -30,7 +30,8 @@ export const SITE = {
   tagline:  'IT Field Notes on LAM/OS',
   description:
     'An information technology field journal — systems, networks, infrastructure, and code, served from a riced Linux desktop.',
-  url:      'https://lamdev.github.io/',   /* fallback when astro.site unset */
+  url:      'https://lamdev.github.io/',   /* fallback only — the deployed
+                                              origin is SITE_URL in .env    */
 };
 
 /* derived strings — compose once, import everywhere */

@@ -1,11 +1,15 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { loadEnv } from 'vite';
 import react   from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 
-// Personal site → base '/'. Project site → base '/repo-name'.
-const SITE = 'https://lamdev.github.io';  // replace with real domain
-const BASE = '/';
+// Deployment values come from the environment (.env locally, repo
+// variables on CI) — see .env.example. Personal site → BASE_PATH '/',
+// project site → '/repo-name'.
+const env  = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '');
+const SITE = env.SITE_URL  || 'https://lamdev.github.io';
+const BASE = env.BASE_PATH || '/';
 
 export default defineConfig({
   output: 'static',
