@@ -511,16 +511,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   align-items: center;
   gap: 4px;
 }
-.bar-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  font-size: 11.5px;
-  color: var(--dim);
-  border: 1px solid transparent;
-}
-.bar-btn:hover { color: var(--acc); border-color: var(--line2); }
 /* pixel-file icons in the tray — the desktop files moved up here */
 .bar-ico {
   display: inline-flex;
@@ -533,13 +523,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .bar-ico:hover { border-color: var(--line2); background: var(--panel2); }
 .bar-ico:active { transform: translate(1px, 1px); }
 .bar-ico svg { display: block; image-rendering: pixelated; }
-.bar-btn kbd {
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 0 4px;
-  color: var(--mute);
-  border: 1px solid var(--line2);
-}
 .bar-sep { width: 1px; height: 22px; background: var(--line2); }
 /* polybar segment — one honest status block: the datetime, kept quiet
    so the launcher stays the bar's single accent */
@@ -718,7 +701,7 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .p-row + .p-row { border-top: 1px dashed color-mix(in srgb, var(--line2) 55%, transparent); }
 /* a pinned post is featured from across the room, not just by its star */
 .p-row:has(.pin) { background: color-mix(in srgb, var(--acc) 6%, transparent); }
-.p-row time, .p-date { font-size: 11.5px; color: var(--mute); white-space: nowrap; }
+.p-row time { font-size: 11.5px; color: var(--mute); white-space: nowrap; }
 .p-row time { grid-column: 1; grid-row: 2; }
 .p-row time::before { content: '└─ '; color: color-mix(in srgb, var(--mute) 60%, transparent); }
 .p-tt { grid-column: 1; grid-row: 1; min-width: 0; }
@@ -767,25 +750,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   border: 1px dashed var(--line2);
 }
 .p-more:hover { color: var(--acc); border-color: var(--acc); }
-
-/* year group header (posts page) */
-.yr-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 16px 16px 4px;
-  padding: 8px 8px;
-  font-size: 11.5px;
-  color: var(--dim);
-  background: var(--panel2);
-  border-left: 2px solid var(--acc);
-}
-.yr-head b { font-family: var(--px); font-size: 16px; font-weight: 400; color: var(--acc); letter-spacing: 0.06em; }
-.yr-head .n { color: var(--mute); font-size: 11.5px; }
-.yr-heat { display: flex; gap: 4px; margin-left: auto; }
-.yr-heat i { width: 8px; height: 8px; background: var(--line); }
-.yr-heat i[data-l="2"] { background: color-mix(in srgb, var(--acc) 45%, var(--line)); }
-.yr-heat i[data-l="3"] { background: var(--acc); }
 
 /* ==================================================================== */
 /*  PAGE HEADER (inside a window)                                        */
@@ -1092,27 +1056,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .w-keys .win-body { padding: 16px 24px; }
 .w-keys .nf-rows { font-size: 11.5px; }
 .w-keys .nf-rows .k { width: 64px; }
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-.stat {
-  padding: 12px 16px;
-  border: 1px solid var(--line);
-  background: var(--panel2);
-}
-.stat b {
-  display: block;
-  font-family: var(--px);
-  font-weight: 400;
-  font-size: 21px;
-  line-height: 1.1;
-  color: var(--acc);
-}
-.stat .k { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
-
-.stats-3 { grid-template-columns: repeat(3, 1fr); margin: 0; }
-@media (max-width: 400px) {
-  .stats-3 { grid-template-columns: 1fr 1fr; }
-}
-
 .mon-lbl {
   display: flex;
   justify-content: space-between;
@@ -1578,7 +1521,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .ol-item.l3 { padding-left: 24px; }
 .ol-item:hover { color: var(--text); border-left-color: var(--line2); }
 .ol-item.on { color: var(--acc); border-left-color: var(--acc); background: var(--panel2); }
-.ol-share { margin: 12px; }
 
 /* vim statusline — pinned to the viewport bottom while the buffer is
    open, exactly like the real thing */
@@ -1616,7 +1558,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   cursor: pointer;
 }
 .stl-file:hover { color: var(--acc); }
-.stl-cat { flex: none; padding: 4px 12px; color: var(--cv, var(--dim)); border-left: 1px solid var(--line); }
 .stl-keys {
   flex: none;
   padding: 4px 12px;
@@ -2329,8 +2270,7 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .tw-tgl[aria-checked="true"] i { transform: translateX(20px); background: var(--acc); }
 
 /* ---- press states — instant pixel-press, no transitions ---------------- */
-.btn:active, .bar-btn:active, .ws-btn:active { transform: translate(1px, 1px); }
-.dico:active .dico-img { transform: translate(1px, 1px); }
+.btn:active, .ws-btn:active { transform: translate(1px, 1px); }
 
 /* ==================================================================== */
 /*  RESPONSIVE                                                           */
@@ -2371,7 +2311,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   .ws-btn .t { display: none; }
   .bar-mid { display: none; }
   .bar-seg.s-clock { display: none; }
-  .bar-btn .lbl { display: none; }
   .bar-ico { display: none; }        /* tray files hide; rofi still lists them */
   #bar-conf { display: inline-flex; }   /* …except the theme switch */
   .bar-tray .bar-sep { display: none; } /* no orphan separators */
@@ -2380,7 +2319,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   .prg { display: none; }
   .stl-keys { display: none; }       /* phones keep mode + file + % only */
   .nf-rows .k { width: 76px; }
-  .stats { grid-template-columns: 1fr 1fr; }
   /* fonts ≥16px or iOS zooms the whole desktop on focus */
   .fzf-bar input, .rofi-input input { font-size: 16px; }
   .fzf-bar kbd, .kbd-hint { display: none; }
