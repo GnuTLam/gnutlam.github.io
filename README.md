@@ -1,43 +1,61 @@
-# Astro Starter Kit: Minimal
+# lam.dev — IT Field Notes on LAM/OS
+
+A statically-generated engineering blog styled as a riced Linux desktop
+(i3 windows, top panel, nvim reader, interactive shell). Astro 6 static
+output with React islands for the interactive parts.
+
+## Develop
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev        # http://localhost:4321
+npm run check      # astro type-check
+npm run build      # production build → dist/
+npm run preview    # serve the built site
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Edit content
 
-## 🚀 Project Structure
+Everything editable lives in a few data files — change, rebuild, publish.
+No component needs touching.
 
-Inside of your Astro project, you'll see the following folders and files:
+| What | Where |
+| --- | --- |
+| Site identity (name, domain, OS, prompt, tagline, meta) | `src/data/site.ts` |
+| Page copy (home hero + about bio/now/role/stack) | `src/data/content.ts` |
+| Social links | `src/data/nav.ts` (`SOCIALS`) |
+| Categories & which tags map into them | `src/data/topics.ts` |
+| Posts | `src/content/posts/*.md` |
+| Avatar / pixel art | `src/data/pixel.ts` |
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+Write a post: add `src/content/posts/<slug>.md` with frontmatter (see any
+existing post). Set `draft: true` to keep it dev-only; `pinned: true` to
+star it to the top. Category, counts, tag pages, RSS and the sitemap all
+derive automatically from the posts collection.
+
+Copy strings in `content.ts` support `**bold**` markers.
+
+## Deploy
+
+Config comes from the environment — copy `.env.example` to `.env`:
+
+```sh
+SITE_URL=https://your-domain        # canonical origin, sitemap, RSS, OG
+BASE_PATH=/                         # or /repo-name for GitHub project pages
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+`.github/workflows/deploy.yml` builds and publishes to GitHub Pages on
+every push to `master`. One-time: **Settings → Pages → Source: GitHub
+Actions**, and set `SITE_URL` / `BASE_PATH` as repository variables.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Layout
 
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+```
+src/
+├── data/        # site.ts, content.ts, nav.ts, topics.ts, pixel.ts, posts.ts
+├── content/     # posts/*.md + content.config.ts (collection schema)
+├── components/  # static/ (Astro) + islands/ (React: reader, shell, posts)
+├── layouts/     # BaseLayout.astro
+├── pages/       # routes: index, posts, categories, tags, about, 404, rss
+└── styles/      # theme.css (one stylesheet)
+```
