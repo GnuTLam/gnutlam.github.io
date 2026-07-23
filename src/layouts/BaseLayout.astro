@@ -10,7 +10,6 @@ interface Props {
   title: string;
   description?: string;
   activeNav: string;
-  readingTitle?: string;
   canonical?: string;
   image?: string;
   ogType?: 'website' | 'article';
@@ -20,7 +19,7 @@ interface Props {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 const {
-  title, description, activeNav, readingTitle, canonical,
+  title, description, activeNav, canonical,
   image, ogType, publishedTime, author, tags, jsonLd,
 } = Astro.props;
 ---
@@ -101,7 +100,7 @@ const {
     });
   </script>
   <a class="skip-link" href="#main">skip to content</a>
-  <SiteHeader active={activeNav} readingTitle={readingTitle} />
+  <SiteHeader active={activeNav} />
   <main class="desktop" id="main">
     <slot />
   </main>

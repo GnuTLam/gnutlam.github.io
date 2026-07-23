@@ -9,9 +9,8 @@ import { SITE } from '../../data/site';
 
 interface Props {
   active: string;
-  readingTitle?: string;
 }
-const { active, readingTitle } = Astro.props;
+const { active } = Astro.props;
 
 const posts = await getPublishedPosts();
 
@@ -130,9 +129,6 @@ const ROFI = [
         <span class="t">{n.label.toLowerCase()}</span>
       </a>
     ))}
-  </div>
-  <div class="bar-mid" aria-hidden>
-    <span>{readingTitle ? `● ${readingTitle}` : ''}</span>
   </div>
   <div class="bar-tray">
 

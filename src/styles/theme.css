@@ -495,21 +495,11 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   background: var(--wc, var(--acc));
   box-shadow: 0 0 7px color-mix(in srgb, var(--wc, var(--acc)) 75%, transparent);
 }
-.bar-mid {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  font-size: 11.5px;
-  color: var(--mute);
-  overflow: hidden;
-}
-.bar-mid span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bar-tray {
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-left: auto;   /* pushes the tray to the right edge of the panel */
 }
 /* pixel-file icons in the tray — the desktop files moved up here */
 .bar-ico {
@@ -2315,7 +2305,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   .bar-menu, .ws-btn { height: 40px; }  /* the 48px bar has room — use it */
   .ws-btn { padding: 0 12px; }
   .ws-btn .t { display: none; }
-  .bar-mid { display: none; }
   .bar-seg.s-clock { display: none; }
   .bar-ico { display: none; }        /* tray files hide; rofi still lists them */
   #bar-conf { display: inline-flex; }   /* …except the theme switch */
