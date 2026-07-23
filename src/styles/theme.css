@@ -1341,37 +1341,43 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   opacity: 0.35;
 }
 .term:focus-within .tcur { opacity: 1; animation: blink 1.1s steps(1) infinite; }
-/* hero — three bands: identity card (art | neofetch output), full-width
-   bio, then the CTA prompt. One dashed rule closes the identity band. */
-.ab-idcard {
+/* hero — a plain self-introduction: portrait beside a text column
+   (name · role · bio · stack), then the CTA prompt below */
+.ab-intro {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 16px clamp(24px, 3.2vw, 48px);
-  margin-bottom: 16px;
-  padding-bottom: 16px;
+  align-items: flex-start;
+  gap: 20px clamp(24px, 3.2vw, 48px);
+}
+.ab-lede { flex: 1; min-width: min(300px, 100%); }
+.ab-name { font-size: 16px; font-weight: 700; margin: 0 0 2px; }
+.ab-name b { color: var(--acc); }
+.ab-name .h { color: var(--dim); font-weight: 400; }
+.ab-role {
+  margin: 0 0 16px;
+  padding-bottom: 14px;
+  font-size: 13px;
+  color: var(--mute);
   border-bottom: 1px dashed color-mix(in srgb, var(--line2) 55%, transparent);
 }
-.ab-nf { flex: 1; min-width: min(280px, 100%); }
-.ab-nf .nf-head { font-size: 14px; }
-.ab-nf .nf-rows { font-size: 13px; gap: 8px; }
 .ab-p { margin: 0 0 12px; font-size: 13px; line-height: 1.8; color: var(--dim); max-width: 68ch; }
-.ab-p:last-child { margin-bottom: 0; }
 .ab-p strong { color: var(--text); }
-/* bio closes with a prompt — where to go next */
-.ab-cta { margin-top: 16px; }
-/* stack row separators live in CSS; inline-block keeps them clear of the
-   link underline */
-.ab-stack a { display: inline-block; }   /* dot + word wrap as one unit */
+/* stack line — a muted label + tag links, closing the intro column */
+.ab-stack { margin: 16px 0 0; font-size: 13px; }
+.ab-stack .k { color: var(--mute); margin-right: 12px; }
+.ab-stack a { display: inline-block; color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
 .ab-stack a + a::before {
   content: "·";
   display: inline-block;
   margin: 0 8px;
   color: var(--mute);
+  text-decoration: none;
 }
-/* the portrait in a framed avatar slot, centered against the id rows */
+/* CTA prompt sits below the whole intro */
+.ab-cta { margin-top: 20px; }
+/* the portrait in a framed avatar slot */
 .ab-ava {
-  align-self: center;
+  flex: none;
   padding: 16px;
   border: 2px solid var(--line2);
   background: var(--panel2);

@@ -23,14 +23,14 @@ export const ABOUT = {
   /* <meta name="description"> of the about page */
   description: 'IT engineer building payments infrastructure, agent orchestrators, and high-throughput data pipelines.',
 
-  /* whoami rows (os comes from site.ts, stack rows link to tag pages —
-     every stack entry must be a real tag) */
-  role:  'IT engineer — infrastructure',
-  focus: 'payments · agents · data pipelines',
-  tz:    'UTC+7',
+  /* one-line role subtitle under the name */
+  role: 'IT engineer — infrastructure · UTC+7',
+
+  /* tools I work with — each entry links to its tag page, so every entry
+     must be a real tag */
   stack: ['rust', 'postgres', 'spark', 'linux'],
 
-  /* # bio — one array item per paragraph, **bold** markers allowed */
+  /* intro paragraphs — one array item per paragraph, **bold** markers allowed */
   bio: [
     'I build the IT infrastructure other engineers never have to think about — payments ledgers, agent orchestrators, and data pipelines that move terabytes without melting the fleet.',
     "This blog is my field journal: **the work, written down while it's still fresh** — what broke at 3AM, why, and what it taught me.",

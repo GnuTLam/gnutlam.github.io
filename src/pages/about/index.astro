@@ -4,7 +4,7 @@ import AboutTerminal from '../../components/islands/AboutTerminal';
 import { SOCIALS } from '../../data/nav';
 import { getPublishedPosts } from '../../data/posts';
 import { HACKER, HACKER_PAL, pxSvg } from '../../data/pixel';
-import { SITE, OS_FULL, PROMPT, pageTitle } from '../../data/site';
+import { SITE, PROMPT, pageTitle } from '../../data/site';
 import { ABOUT, em } from '../../data/content';
 
 /* drafts stay browsable in dev, but the about stats only log real writes */
@@ -41,14 +41,6 @@ const STATS = {
   /* ascii signal — one glyph per month */
   spark: cadence.map(x => (x.n === 0 ? '▁' : x.n === 1 ? '▄' : '█')).join(''),
 };
-
-/* neofetch identity rows — copy lives in data/content.ts */
-const ID_ROWS = [
-  { k: 'os',    v: OS_FULL },
-  { k: 'role',  v: ABOUT.role },
-  { k: 'focus', v: ABOUT.focus },
-  { k: 'tz',    v: ABOUT.tz },
-];
 ---
 
 <BaseLayout
@@ -68,30 +60,20 @@ const ID_ROWS = [
       </div>
 
       <div class="win-body">
-        <div class="ab-idcard">
+        <div class="ab-intro">
           <span class="nf-art ab-ava" set:html={pxSvg(HACKER, HACKER_PAL, 204)} />
-          <div class="ab-nf">
-            <p class="nf-head"><b>{SITE.user}</b><span class="h">@{SITE.domain}</span></p>
-            <p class="nf-rule">-----------</p>
-            <div class="nf-rows">
-              {ID_ROWS.map(r => (
-                <div class="r">
-                  <span class="k" style="width: 72px">{r.k}</span>
-                  <span class="v">{r.v}</span>
-                </div>
-              ))}
-              <div class="r">
-                <span class="k" style="width: 72px">stack</span>
-                <span class="v ab-stack">{ABOUT.stack.map(t => <a href={`/tags/${t}/`}>{t}</a>)}</span>
-              </div>
-            </div>
+          <div class="ab-lede">
+            <p class="ab-name"><b>{SITE.user}</b><span class="h">@{SITE.domain}</span></p>
+            <p class="ab-role">{ABOUT.role}</p>
+            {ABOUT.bio.map(p => (
+              <p class="ab-p">{em(p).map(s => s.b ? <strong>{s.t}</strong> : s.t)}</p>
+            ))}
+            <p class="ab-stack">
+              <span class="k">stack</span>
+              {ABOUT.stack.map(t => <a href={`/tags/${t}/`}>{t}</a>)}
+            </p>
           </div>
         </div>
-
-        <p class="mon-lbl"><span># bio</span></p>
-        {ABOUT.bio.map(p => (
-          <p class="ab-p">{em(p).map(s => s.b ? <strong>{s.t}</strong> : s.t)}</p>
-        ))}
 
         <div class="nf-cta ab-cta">
           <a class="btn pri" href="/posts/">$ cd ~/posts</a>
