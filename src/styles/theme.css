@@ -1,5 +1,5 @@
 /* ==================================================================== */
-/*  LAM/OS — linux edition. The blog as a riced tiling desktop:          */
+/*  GNUT/OS — linux edition. The blog as a riced tiling desktop:         */
 /*  i3-style windows with gaps, a top panel with workspaces, rofi        */
 /*  launcher, nvim reader, kernel-panic 404. Pixel type stays.           */
 /* ==================================================================== */
@@ -8,81 +8,178 @@
 @font-face {
   font-family: "Bold Pixels";
   src: url("/fonts/BoldPixels.ttf") format("truetype");
+  /* ONE weight, declared as a range: a <b> or a font-weight: 700 inside pixel
+     chrome then finds a matching face instead of asking the browser to smear
+     a fake bold onto a 1-bit font */
+  font-weight: 100 900;
   font-display: swap;
 }
 
 /* ---- tokens ----------------------------------------------------------- */
 /* Two signature modes tell one retro-hardware story:                      */
-/*   DARK  — "amber phosphor": blue-charcoal chassis, CRT-amber accent.    */
-/*   LIGHT — "beige hardware": warm paper like an old PC case; code and    */
-/*            terminal surfaces turn bright paper too (see --term below).  */
+/*   DARK  — "red phosphor": neutral black chassis, CRT-red accent.        */
+/*   LIGHT — "porcelain": bright warm-white paper, putty desk, brick accent. */
+/*            Code and terminal surfaces sit on a warmer sheet (see --term). */
+/*   One chroma ladder: voice red C≈0.15 › semantic ≈0.10 › teal/categories ≈0.07. */
 :root {
-  --bg:     #11151a;                 /* wallpaper                        */
-  --bg2:    #0a0e12;
-  --panel:  #181e26;                 /* window body                      */
-  --panel2: #212a35;                 /* window title / raised            */
-  --line:   #2b3542;                 /* inactive border                  */
-  --line2:  #3d4c5f;
+  --bg:     #121212;                 /* wallpaper                        */
+  --bg2:    #0b0b0b;
+  --panel:  #1a1a1a;                 /* window body                      */
+  --panel2: #242424;                 /* window title / raised            */
+  --line:   #2e2e2e;                 /* inactive border                  */
+  --line2:  #484848;
+  --bd:     #484848;                 /* border + tab of an UNfocused tile (i3) */
   --text:   #e9e3d3;                 /* warm paper white — easy reading  */
-  --dim:    #c6bfae;
-  --mute:   #8291a3;
+  --dim:    #d5cfbf;                 /* one notch brighter — body ink must
+                                        never read as "faded" next to text */
+  --mute:   #958f86;
 
-  --acc:    #ffb454;                 /* CRT amber — the voice            */
-  --acc2:   #ff8f40;
-  --ink:    #1a1206;                 /* text on accent                   */
-  --link:   #6fd0bd;
+  --acc:    #df695e;                 /* CRT red — the voice            */
+  --acc2:   #eb8278;
+  --ink:    #1a0606;                 /* text on accent                   */
+  --link:   #82cbbe;
+  /* panel-icon inks: the outline must read against the bar it sits on, so on
+     the black chassis it lifts to a light slate instead of near-black */
+  --ico-line:   #8c8781;
+  --ico-screen: #333333;
+  --hatch:  color-mix(in srgb, var(--line2) 30%, transparent);  /* wallpaper */
 
-  --term:   #0c1014;                 /* code / terminal surface bg       */
-  --term-txt: #d8d2c2;
-  /* accents as they render on the terminal surface — the light palette
-     overrides the whole --term* family so code reads as bright paper */
-  --term-acc:  #ffb454;
-  --term-warn: #ffd23f;
-  --term-link: #6fd0bd;
+  --term:   #222222;                 /* code / terminal surface bg — a
+                                        LIFTED pane, one step brighter than
+                                        the window panel behind it: a lit
+                                        screen instead of a black hole    */
+  --term-txt: #dcd9d2;               /* ink — neutral, never gold        */
+  /* the code surface is TONAL, not a rainbow: most of it stays plain ink and
+     only three roles carry colour — teal keyword (the site's own link hue),
+     slate type, rust literal. Red stays the chrome voice; nothing here is
+     allowed to drift back toward the old sepia gold. */
+  --term-acc:  #88cdc6;
+  --term-warn: #d9947d;
+  --term-link: #88cdc6;
+  --ic: #cfccc4;                     /* inline-code ink in prose         */
+  /* how much ink the bat-style line-number gutters keep. Ornament, yes —
+     but ornament you can still read: both values clear the 3:1 UI floor
+     on their own --term surface, and both stay far under the code text. */
+  --gutter-ink: 60%;
 
-  /* category tones — names kept so data/topics.ts keeps working */
-  --accent:  #ff7a45;
-  --yellow:  #ffd23f;
-  --blue:    #5cb2ff;
-  --magenta: #d78cff;
-  --teal:    #4dd6c1;
-  --green:   #8ade6f;
+  /* SEMANTIC colors — these signal, they never classify. One chroma step under
+     the voice, so nothing out-shouts it, and fully decoupled from the category
+     set below, so danger stays danger and identity stays identity no matter
+     how quiet categories get. */
+  --accent:  #d68aa8;                /* danger / destructive (close ✕, rm -rf, panic) — dusty rose, apart from the red voice */
+  --yellow:  #e2bf76;                /* warning / pinned star / inline code           */
+  --green:   #9bce90;                /* success / identity — the green=who voice       */
+
+  /* CATEGORY tones — "Patina": one warm oxidized-metal family (oxblood,
+     bronze, olive, moss, denim, mauve), chroma held near HALF of the accent and
+     to one tight lightness band, so category color is a calm second-look cue
+     that never competes with the red UI voice. DARK = dusty tints on the
+     phosphor chassis. AA-verified as chip text over its own 12% wash. */
+  --cat-rust:    #cd948d;            /* oxblood brick */
+  --cat-storage: #c69b71;            /* bronze umber  */
+  --cat-data:    #afa66f;            /* drab olive    */
+  --cat-scale:   #8eb086;            /* moss green    */
+  --cat-ai:      #83a8cf;            /* denim slate   */
+  --cat-craft:   #c793ab;            /* dusty mauve   */
 
   --px:   "Bold Pixels", "Courier New", monospace;
   --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
 
-  --wrap: min(1440px, 96.5vw);       /* the ONE width authority          */
-  --fs-display: clamp(26px, 4vw, 40px);  /* every pixel display heading  */
+  --sh: 0, 0, 0;                     /* shadow ink (rgb triplet) — light
+                                        flips it warm so no shadow is ever
+                                        pitch-black on paper              */
+  --measure: 74ch;                   /* the ONE reading measure          */
+  --wrap: 1440px;                    /* the ONE width authority          */
+  /* BOLD PIXELS GRID — its outlines sit on a 64-unit cell of a 1024 em, i.e. 16px
+     per em, so it is pixel-crisp ONLY at these four sizes and smeared anywhere
+     between. Every Bold Pixels font-size in this sheet is one of them; responsive
+     means switching step at a breakpoint (see RESPONSIVE), never clamp() / vw / em.
+     Its line boxes are whole multiples of 4px. */
+  --px-1: 16px;  --px-2: 32px;  --px-3: 48px;  --px-4: 64px;
+  --lh-chrome: 20px;                 /* line box for --px-1 UI chrome (8px caps centre on it) */
+  --fs-hero:    var(--px-4);  --lh-hero:    72px;   /* the home headline            */
+  --fs-display: var(--px-3);  --lh-display: 56px;   /* page titles + article title  */
   --barh: 48px;                      /* top panel height                 */
-  --gap: clamp(16px, 1.8vw, 24px);   /* tiling gaps (8px scale)          */
+  --gap: 24px;                       /* tiling gaps (8px scale; 16 on phones) */
+  --edge: 48px;                      /* desktop side padding: viewport edge → tile edge (32 ≤1140, 16 on phones) */
+  --gut: 24px;                       /* THE tile gutter: tile border → content, every tile (16 on phones) */
+
+  /* ---- rhythm tokens ---------------------------------------------------
+     The design already SPOKE an 8px spacing rhythm and a 1.2 type step —
+     they were just retyped as literals in every rule. Named here once so
+     the rhythm is enforceable, not merely habitual. Values map 1:1 to what
+     the components already use, so introducing the scale changes nothing on
+     screen; migrating a literal onto its token is then a no-op the eye can
+     trust. Half-steps (3px) stay literal — they are optical nudges, not rhythm. */
+  --sp-1: 4px;    --sp-2: 8px;    --sp-3: 12px;   --sp-4: 16px;
+  --sp-5: 24px;   --sp-6: 32px;   --sp-7: 40px;   --sp-8: 48px;
+
+  /* JetBrains type scale — every JetBrains font-size in this sheet is one of
+     these steps; only em-relative sizes and glyph / iOS-guard 16px inputs stay
+     literal, each with a comment saying why. Bold Pixels has its own grid
+     (--px-*, above) — UI chrome never uses these. */
+  --fs-micro: 10px;    /* gutter numbers, code-bar flags, glyph badges    */
+  --fs-meta:  11.5px;  /* the small MONO size — excerpts, code bars, glyph fallbacks */
+  --fs-sm:    13px;    /* pager titles, secondary rows                    */
+  --fs-base:  14px;    /* body / UI default                               */
+  --fs-lede:  16px;    /* page sub-leads (.ph-sub), hero lede             */
+  --fs-read:  16px;    /* reader body — its own token, not tied to the lede */
+  --fs-standfirst: 18px; /* article standfirst (.rd-lede): outranks the 16px reader body */
+  /* prose heading ladder — h2 is Bold Pixels (--px-2); below it JetBrains
+     steps 16 → 20 by rank (h4 → h3)                                      */
+  --fs-h3: 20px;  --fs-h4: 16px;
 }
 
-/* ---- LIGHT — "beige hardware" ------------------------------------------ */
+/* ---- LIGHT — "porcelain" ----------------------------------------------- */
 [data-palette="light"] {
-  --bg: #e3dccb; --bg2: #d3cbb5;
-  --panel: #f7f3e9; --panel2: #ebe4d2; --line: #d9d0ba; --line2: #a4997a;
-  --text: #2c2a21; --dim: #5c5645; --mute: #665e4a;
-  --acc: #a8500e; --acc2: #8a3e05; --ink: #fbf7ee; --link: #0c6376;
-  /* code & terminal surfaces: bright paper, dark ink, burnt-amber accent */
-  --term: #f6efdb; --term-txt: #3b3426;
-  --term-acc: #a8500e; --term-warn: #78610a; --term-link: #0c6376;
-  --accent: #c2410c; --yellow: #78610a; --blue: #155bc9;
-  --magenta: #8f3bbf; --teal: #0d7a6f; --green: #2e7d32;
+  --bg: #f5efe7; --bg2: #ece5dc;
+  --panel: #fefcf9; --panel2: #f4eee5; --line: #e5dfd6; --line2: #b2aa9e;
+  --bd: #c4baae;
+  --text: #25211b; --dim: #423c35; --mute: #625d55;
+  /* every ink below clears 4.5:1 on the DIMMEST paper it ever lands on
+     (--bg #f5efe7 for the footer, --panel2 #f4eee5 for chips) — same burnt hues,
+     one notch darker so the light palette is readable, not just pretty */
+  --acc: #a83f34; --acc2: #93342a; --ink: #fbf7ee; --link: #0c6376;
+  /* code & terminal surfaces: a faintly warmer sheet laid on near-white paper,
+     one step below the window panel and held apart from it by the
+     hairline + hard shadow of an object inside a window (.md-code, .pv-peek).
+     The old tan read yellow; the grey slab that replaced it read gloomy —
+     this reads as clean paper */
+  --term: #f9f6f2; --term-txt: #2b2620;
+  --term-acc: #0d545e; --term-warn: #8a3324; --term-link: #0d545e;
+  --ic: #38332c;                     /* inline-code ink in prose */
+  --gutter-ink: 70%;                 /* dark ink fades faster on bright paper */
+  /* semantic (danger / warning / success-identity) — one chroma step under the voice, never a category */
+  --accent: #89365b; --yellow: #78610a; --green: #3d6736;
+  /* category "Patina" tones — deep oxidized inks on cream; each clears AA as
+     chip text over its own 12% wash (worst 4.58:1), one tight luminance band
+     so no category out-shouts another or the red voice */
+  --cat-rust: #804238; --cat-storage: #79532a; --cat-data: #5e551b;
+  --cat-scale: #40603c; --cat-ai: #385879; --cat-craft: #774a5f;
+  --hatch: color-mix(in srgb, #5d4d33 12%, transparent);   /* wallpaper */
+  /* on the cream panel the original near-black outline is already the crispest
+     thing possible (16.7:1), so light keeps it */
+  --ico-line: #16130d; --ico-screen: #20262e;
+  --sh: 93, 77, 51;                  /* warm ink shadows on paper */
 }
 
 /* ---- base ------------------------------------------------------------ */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; overflow-x: clip; }
-html { background: var(--bg); }
+html { background: var(--bg); scrollbar-gutter: stable; }
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   color: var(--text);
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: var(--fs-base);
+  font-weight: 500;                  /* JetBrains body weight: stem 8% → 11% */
   line-height: 1.7;
   background-color: var(--bg);
+  /* mono on a warm paper ground renders fat on macOS — thin it once, here */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 /* wallpaper vignette + dot grid on a fixed layer of its own — cheaper than
    background-attachment: fixed, which repaints the whole viewport on scroll */
@@ -90,34 +187,67 @@ body::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: -1;
+  /* z-index 0, NOT -1: a negative z-index child paints BEHIND its parent's
+     own background, and body carries an opaque background-color — so at -1
+     this entire wallpaper was invisible. Content sits at z-index 1 (.desktop,
+     .dt-foot) or on fixed chrome layers, so 0 keeps it behind everything. */
+  z-index: 0;
   pointer-events: none;
+  /* WALLPAPER — the desktop is a different MATERIAL from the window panel:
+     the tiles are flat, bare fills, the desktop is hatched. A 9px diagonal
+     hatch is dense enough to read in the 24px gaps between tiled windows
+     (a 22px dot lattice simply never lands there), over a 110px cell grid
+     for structure, a lit vignette and a whisper of warm light up top. */
   background-image:
-    radial-gradient(110% 80% at 50% 0%, transparent 60%, var(--bg2) 100%),
-    radial-gradient(color-mix(in srgb, var(--line) 55%, transparent) 1px, transparent 1px);
-  background-size: auto, 22px 22px;
+    radial-gradient(60% 45% at 50% 0%, color-mix(in srgb, var(--acc) 8%, transparent), transparent 70%),
+    /* the vignette must stay TRANSLUCENT (60% of --bg2, never the solid
+       colour): at full opacity it painted right over the grid and hatch
+       below it and the desktop went flat again */
+    radial-gradient(130% 95% at 50% -10%, transparent 40%, color-mix(in srgb, var(--bg2) 60%, transparent) 100%),
+    linear-gradient(to right, color-mix(in srgb, var(--line2) 30%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--line2) 30%, transparent) 1px, transparent 1px),
+    repeating-linear-gradient(45deg, var(--hatch) 0 1px, transparent 1px 9px);
+  background-size: auto, auto, 110px 110px, 110px 110px, auto;
 }
-/* CRT scanlines (theme.conf toggle) */
-body[data-scanlines="on"]::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 9990;
-  pointer-events: none;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.025) 0 1px,
-    transparent 1px 3px
-  );
-}
-[data-palette="light"] body[data-scanlines="on"]::before {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.03) 0 1px,
-    transparent 1px 3px
-  );
-}
+/* (the full-viewport CRT scanline overlay is gone — it taxed every line of
+   text for a prop; CRT texture now lives only on terminal glass surfaces) */
 a { color: inherit; text-decoration: none; }
+b, strong { font-weight: 800; }    /* JetBrains bold; Bold Pixels has one weight and ignores it */
+/* the UA stylesheet gives these a generic `monospace` (Consolas), not JetBrains Mono */
+code, pre, kbd, samp { font-family: var(--mono); }
+/* a glyph Bold Pixels lacks (↵ ⏎ ✓ ✗ ▸ ▹ ™, box drawing, blocks) inside pixel
+   chrome: wrap it in .mono and it falls back to the content face, at the old
+   small-mono size so it does not tower over the 8px pixel caps */
+.mono { font-family: var(--mono); font-size: var(--fs-meta); }
+
+/* ==================================================================== */
+/*  MOTION — one curve family (the ws-zoom bezier), three layers:        */
+/*  page transitions · state micro-glides · popup entries.               */
+/*  Geometry (press, caret, boot) still SNAPS — only surfaces glide.     */
+/* ==================================================================== */
+/* cross-document view transitions: every same-origin navigation gets a
+   quick crossfade (Chromium; other engines fall back to the plain cut) */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation-duration: 0.14s; animation-timing-function: ease-out; }
+::view-transition-new(root) { animation-duration: 0.18s; animation-timing-function: ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+}
+/* state micro-glides: color/border/shadow ease over 120ms so hover and
+   selection stop popping — transform is deliberately NOT here, the 1px
+   pixel-press and the ws-zoom must stay instant/owned elsewhere */
+:where(a, button, .win, .p-row, .chip, .tagchip, .pd-chip, .cbar,
+       .rd-pgr, .rd-rel-r, .fm-dir, .fm-file, .ws-btn, .bar-ico, .bar-menu,
+       .md-code-btn, .md-img-open, .stl-file, .stl-pct, .ol-item,
+       .rofi-item, .tw-pal button) {
+  transition: color 0.12s ease-out, background-color 0.12s ease-out,
+              border-color 0.12s ease-out, box-shadow 0.15s ease-out,
+              opacity 0.12s ease-out;
+}
+.ws-btn .ico svg { transition: opacity 0.12s ease-out, filter 0.12s ease-out; }
 button {
   font: inherit;
   color: inherit;
@@ -143,13 +273,14 @@ img, svg { max-width: 100%; }
 }
 .skip-link {
   position: fixed;
-  top: 8px; left: 8px;
+  top: var(--sp-2); left: var(--sp-2);
   z-index: 9999;
-  padding: 8px 16px;
+  padding: var(--sp-2) var(--sp-4);
   background: var(--acc);
   color: var(--ink);
-  font-size: 11.5px;
-  font-weight: 700;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
   transform: translateY(-64px);
 }
 .skip-link:focus { transform: none; }
@@ -161,11 +292,13 @@ body.crt-flip::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 99997;                    /* above scanlines/bar, below boot/halt */
+  z-index: 99997;                    /* above the bar and popups, below boot/halt */
   pointer-events: none;
+  /* accent mixed on the CURRENT wallpaper, so the flash reads in BOTH
+     directions of the toggle — the old fixed cream was invisible on light */
   background:
     repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0 2px, transparent 2px 5px),
-    color-mix(in srgb, var(--acc) 30%, #fdf6e3);
+    color-mix(in srgb, var(--acc) 40%, var(--bg));
   animation: crt-flip 0.25s steps(5, end) both;   /* 5 phosphor-decay frames */
 }
 @keyframes crt-flip {
@@ -200,82 +333,126 @@ body.crt-flip::after {
   50%       { transform: scaleY(0.04); }
   75%, 100% { transform: scaleY(0.04); opacity: 0; }
 }
-.boot .ok { color: var(--green); font-weight: 700; }
-.boot .hd { color: var(--acc); font-weight: 700; }
-.boot .dm { color: var(--mute); }
+.boot .ok { color: var(--green); font-weight: 800; }
+.boot .hd { color: var(--acc); font-weight: 800; }
 .boot pre { margin: 0; white-space: pre-wrap; }
 
 /* ---- buttons / chips --------------------------------------------------- */
+/* THE CONTROL LAW — one family, one state grammar:
+     form    24px (.btn 30px) Bold Pixels controls (--px-1 on a 20px line), 1px border,
+             square corners, no shadows (shadows belong to floating surfaces)
+     rest    --text label (tone on category chips), --line2 hairline, no fill
+             (category chips: 12% tone wash)
+     hover   boxed → accent border + accent ink · boxless → --panel2 wash
+     on      selected = 12% accent (or category tone) tint + one 2px accent edge (underline / rail / border) + ink text; solid fills are for actions (.btn.pri) and vim's mode block only (aria-pressed / .on / .sel)
+     press   translate(1px,1px) — the one block at the foot of this file
+   Hierarchy: .btn.pri fills with accent · .btn outlines · ghosts are text
+   only (.stl-file, .ol-btn, .md-code-more, footer links). */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-family: var(--mono);
-  font-size: 12.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  gap: var(--sp-2);
+  padding: 4px 12px;
+  font-family: var(--px);
+  font-size: var(--px-1);                    /* one chrome size across the site */
+  line-height: var(--lh-chrome);
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--text);
-  background: var(--panel2);
+  /* the rest state is a hairline and a word. The old --panel2 slab made a
+     secondary button as loud as the primary one standing next to it. */
+  background: none;
   border: 1px solid var(--line2);
   user-select: none;
 }
-.btn:hover { border-color: var(--acc); color: var(--acc); }
+.btn:hover, .btn:focus-visible { border-color: var(--acc); color: var(--acc); }
 .btn.pri { background: var(--acc); border-color: var(--acc); color: var(--ink); }
-.btn.pri:hover { background: var(--acc2); border-color: var(--acc2); color: var(--ink); }
+.btn.pri:hover, .btn.pri:focus-visible { background: var(--acc2); border-color: var(--acc2); color: var(--ink); }
 /* the ONLY two button sizes on the site — no per-page overrides */
-.btn.sm { padding: 4px 12px; font-size: 11.5px; }
+.btn.sm { padding: 1px 10px; font-size: var(--px-1); }
 
 /* one chip metric across every variant — tint (category), ghost (tag),
    toggle (filter) differ only in color, never in size */
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 2px 12px;
-  font-size: 11.5px;
-  line-height: 1.6;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  gap: var(--sp-2);
+  padding: 1px 10px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--tc, var(--dim));
   border: 1px solid color-mix(in srgb, var(--tc, var(--line2)) 55%, transparent);
   background: color-mix(in srgb, var(--tc, var(--line2)) 12%, transparent);
   white-space: nowrap;
 }
-a.chip:hover { background: var(--tc, var(--acc)); color: var(--ink); }
+/* chips hover like every other control: the hairline goes full tone and the
+   ink comes with it. The wash STAYS at its 12% rest value — the light
+   palette's category inks clear 4.5:1 there with ~0.1 to spare, and any
+   extra tint behind them spends it. The PRESSED state (.pd-chip[aria-pressed])
+   doubles the wash and takes the full tone border; no solid fill. */
+a.chip:hover, a.chip:focus-visible {
+  border-color: var(--tc, var(--acc));
+  color: var(--tc, var(--acc));
+}
 
 .tagchip {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
-  padding: 2px 12px;
-  font-family: var(--mono);
-  font-size: 11.5px;
-  line-height: 1.6;
+  gap: var(--sp-2);
+  padding: 1px 10px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
   color: var(--dim);
   border: 1px solid var(--line2);
-  background: var(--panel2);
+  background: none;                  /* outline only, same as .btn */
 }
-/* tags stay monochrome — the category tone (--tc) deliberately ignored
-   here so tag lists don't turn into a 6-color rainbow */
-.tagchip b { color: var(--text); font-weight: 700; }
-.tagchip .n { font-size: 10px; color: var(--mute); }
-.tagchip:hover { border-color: var(--acc); }
-.tagchip:hover b { color: var(--acc); }
+/* tag LABELS stay monochrome so lists read as one voice — the parent
+   category's tone speaks only through the count and the hover answer;
+   color-coding without the 6-color rainbow */
+.tagchip b { color: var(--text); font-weight: 400; }
+.tagchip .n { color: var(--tc, var(--mute)); }
+.tagchip:hover, .tagchip:focus-visible { border-color: var(--tc, var(--acc)); color: var(--tc, var(--acc)); }
+.tagchip:hover b, .tagchip:hover .n,
+.tagchip:focus-visible b, .tagchip:focus-visible .n { color: var(--tc, var(--acc)); }
+a.chip, .tagchip, .cg-h a { position: relative; }
 
 /* ==================================================================== */
-/*  WINDOW KIT — i3 style: thin border, flat title, focus accent         */
+/*  WINDOW KIT — honest i3: bare tile, one name line inside the frame   */
 /* ==================================================================== */
+/* THE SURFACE LAW — border weight and shadow offset travel together, so
+   a box always announces its own rank:
+     floating over the desktop  2px + 8px   .rofi-box .tw .toast .zoom
+     tile (i3 window)           1px + none  .win — flat; on the home desk the
+                                unfocused tiles get 1px + a 4px solid ledge
+                                (tier 2), and the FOCUSED tile 2px + the 6px
+                                dithered hard shadow (.win.focus::after), the
+                                only texture in the UI (tier 1)
+     object inside a window     1px + none  .md-code/-table/-img/-diagram,
+                                            .md-callout .pv-peek, fm rows
+                                            — flat on the tile's paper; a shadow
+                                            here would lift content ABOVE the
+                                            window that contains it
+   Accent rails (the coloured left edge) are 2px everywhere. */
 .win {
+  /* --bd-t / --tt drive the frame and the window's name together: neutral
+     on an unfocused tile, red on the focused one */
+  --bd-t: var(--bd);
+  --tt: var(--dim);
   position: relative;
   display: flex;
   flex-direction: column;
   background: var(--panel);
-  border: 2px solid var(--line2);
-  box-shadow: 7px 7px 0 rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--bd-t);
   min-width: 0;
-  /* one quick 2-frame map-in — no stagger, no scale: smoothest possible */
-  animation: win-in 0.12s steps(2, end) both;
+  /* one quick 2-frame map-in — no stagger, no scale: smoothest possible.
+     `backwards`, not `both`: a held opacity animation keeps the tile a
+     stacking context, and the focused tile's dithered shadow (z-index -1)
+     would then paint over its own panel instead of behind it */
+  animation: win-in 0.12s steps(2, end) backwards;
 }
 @keyframes win-in {
   from { opacity: 0; }
@@ -305,87 +482,91 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   60%  { opacity: 1; }
   to   { transform: scale(0.08); opacity: 0; }
 }
-.win > .win-body { flex: 1 0 auto; }               /* status bars pin to bottom */
-.win:hover { border-color: color-mix(in srgb, var(--acc) 45%, var(--line2)); }
-.win.focus, .win.focus:hover { border-color: var(--acc); box-shadow: 7px 7px 0 color-mix(in srgb, var(--acc) 22%, rgba(0, 0, 0, 0.3)); }
-.win::after {                    /* resize grip, bottom-right */
+.win > .win-body { flex: 1 0 auto; }               /* the body takes the tile's stretch */
+/* FOCUS — the red border without layout shift: the 1px border plus a 1px
+   inward outline reads as one 2px red frame while the box never moves (an
+   outline paints over the children, so a full-bleed terminal can't cover it).
+   The about shell is a live terminal, so it takes focus from the id tile
+   while the caret is inside it (one focused tile per screen, like i3). */
+.win.focus, .w-side:focus-within { --bd-t: var(--acc); --tt: var(--acc); outline: 1px solid var(--acc); outline-offset: -2px; }
+.ab:has(.w-side:focus-within) > .w-id { --bd-t: var(--bd); --tt: var(--dim); outline: none; }
+/* the one texture: a 1-bit dithered hard shadow, 6px off, on the focused tile
+   only. It sits behind the tile (negative z-index in the desktop's stacking
+   context) so the panel stays flat and opaque in front of it. */
+.win.focus::after, .w-side:focus-within::after {
   content: "";
   position: absolute;
-  right: 3px; bottom: 3px;
-  width: 13px; height: 13px;
-  background: repeating-linear-gradient(135deg, var(--line2) 0 1.5px, transparent 1.5px 4.5px);
-  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  inset: 6px -6px -6px 6px;
+  z-index: -1;
+  /* --bd leaned toward --text so the 2px checker still reads on the wallpaper hatch */
+  background: repeating-conic-gradient(color-mix(in srgb, var(--text) 40%, var(--bd)) 0 25%, transparent 0 50%) 0 0 / 4px 4px;
   pointer-events: none;
-  opacity: 0.9;
 }
+.ab:has(.w-side:focus-within) > .w-id::after { content: none; }
+/* THE WINDOW'S NAME LINE — inside the frame, never on or outside it. The
+   path + program sit on the left (the order a prompt prints them), the live
+   counters on the right of the SAME line, so the whole header costs one 20px
+   row and the frame stays a single clean rectangle. No fill, no tab: it is
+   quiet chrome above the content, not a label stuck to the border. */
 .win-tbar {
   display: flex;
+  flex-wrap: wrap;                   /* a long counter drops under the name, still inside */
   align-items: center;
-  gap: 12px;
-  min-height: 34px;
-  padding: 4px 8px 4px 12px;
-  background: linear-gradient(180deg, var(--panel2), color-mix(in srgb, var(--panel2) 82%, var(--panel)));
+  column-gap: var(--sp-4);
+  /* the window's TITLE BAR: its own strip in the top-left corner, held apart
+     from the content by a hairline. Same dialect as the sub-window bars
+     (.md-code-bar, .pv-bar: panel2 strip) one rank taller
+     (32px vs 28px), so a window's bar always out-ranks the bars inside it */
+  min-height: 32px;
+  /* inset = the hang of the row highlights (--gut - 14: list pad; rail + row pad
+     make up the rest), so the bar text and every selected-row box share one edge */
+  padding: var(--sp-1) calc(var(--gut) - 14px);
+  background: var(--panel2);
   border-bottom: 1px solid var(--line);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  color: var(--mute);
   user-select: none;
 }
-.win-tbar::before {              /* app dot — tinted per window */
-  content: "";
-  flex: none;
-  width: 9px; height: 9px;
-  background: var(--cv, var(--acc));
-  box-shadow: 0 0 6px color-mix(in srgb, var(--cv, var(--acc)) 65%, transparent);
-}
-.win.focus > .win-tbar { border-bottom-color: color-mix(in srgb, var(--acc) 40%, var(--line)); }
 .win-tbar-t {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--mono);
-  font-size: 12.5px;
-  color: var(--dim);
 }
-/* the path is ALWAYS accent-colored — same window name, same color, on
-   every workspace; focus is signalled by the border, not the title */
-.win-tbar-t b { color: var(--acc); font-weight: 700; }
-/* real window buttons: [–] [□] [✕] — ✕ is an <a> only where close has a
-   real destination; elsewhere it renders decorative (honest chrome) */
-.win-dots { display: flex; gap: 4px; flex: none; }
-.win-dots > i, .win-dots > a {
-  width: 22px; height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--mono);
-  font-size: 11.5px;
-  font-style: normal;
-  line-height: 1;
+.win-tbar-t b { font-weight: 400; color: var(--tt); }
+/* the program that owns the window sits in the bar's RIGHT corner, apart from
+   the path that names it (left) — an app label, quieter than the path. With
+   counters present, a 1px rule (the top bar's .bar-sep) splits them from it */
+.win-app {
+  flex: 0 3 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--mute);
-  background: var(--panel);
-  border: 1px solid var(--line2);
 }
-.win-dots > :nth-child(1)::before { content: "–"; }
-.win-dots > :nth-child(2)::before { content: "□"; font-size: 10px; }
-.win-dots > :nth-child(3)::before { content: "✕"; }
-.win-dots > i:hover { color: var(--text); border-color: var(--line2); }
-.win-dots > a { color: color-mix(in srgb, var(--accent) 80%, var(--mute)); }
-.win-dots > a:hover { background: var(--accent); color: var(--ink); border-color: var(--accent); }
-.win-dots > a:active { transform: translate(1px, 1px); }
-.win-body { padding: clamp(16px, 1.6vw, 24px) clamp(16px, 1.8vw, 24px); }  /* 24px gutter law */
+.win-tbar-t + .win-app { margin-left: auto; }
+.win-status + .win-app { padding-left: var(--sp-4); border-left: 1px solid var(--line2); }
+.win-body { padding: var(--gut); }  /* gutter law — one token, both axes */
+/* a body that follows a page header shares the header's content edge */
+.ph + .win-body { padding-inline: var(--gut); }
+/* the counters: right end of the name line, plain muted text, one gap apart */
 .win-status {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 12px;
-  border-top: 1px solid var(--line);
-  font-size: 11.5px;
-  color: var(--mute);
-  overflow: hidden;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  column-gap: var(--sp-4);
+  margin-left: auto;
+  min-width: 0;
+  user-select: text;
 }
-.win-status b { color: var(--dim); }
-.win-status .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.win-status > * { white-space: nowrap; }
+.win-status b { font-weight: 400; color: var(--dim); }
+.mon-lbl a { color: var(--dim); }
+.mon-lbl a:hover, .mon-lbl a:focus-visible { color: var(--acc); }
 
 /* ==================================================================== */
 /*  DESKTOP FRAME + TOP PANEL                                            */
@@ -395,30 +576,40 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   width: 100%;
   max-width: var(--wrap);
   margin: 0 auto;
-  padding: calc(var(--barh) + var(--gap)) clamp(12px, 3vw, 32px) var(--gap);
+  padding: calc(var(--barh) + var(--gap)) var(--edge) var(--gap);
 }
 .dt-foot {
-  max-width: var(--wrap);
-  width: 100%;
-  margin: 0 auto;
-  padding: 12px clamp(12px, 3vw, 32px) 24px;  /* gutter matches .desktop exactly */
-  border-top: 1px solid var(--line);          /* anchors the page's end   */
+  max-width: calc(var(--wrap) - 2 * var(--edge));
+  width: calc(100% - 2 * var(--edge));
+  margin-inline: auto;
+  padding: var(--sp-3) 0 var(--sp-5);  /* the box itself spans exactly the tile edges, like .desktop's content */
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 16px;
+  gap: var(--sp-1) var(--sp-6);
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   letter-spacing: 0.04em;
   color: var(--mute);
 }
-.dt-foot a:hover { color: var(--acc); }
+.dt-foot a { color: var(--text); }
+.dt-foot a:hover, .dt-foot a:focus-visible { color: var(--acc); }
+.dt-foot time { white-space: nowrap; }
 /* invisible hit-area growth — bottom-of-screen links are hardest to tap */
 .dt-foot a { display: inline-block; padding: 8px 2px; margin: -8px -2px; }
 .dt-foot .ps { color: var(--dim); }
-.dt-foot .ps b { color: var(--green); font-weight: 700; }
+.dt-foot .ps b { color: var(--green); font-weight: 800; }
 .dt-foot .ps .path { color: var(--acc); }
-.dt-foot .right { margin-left: auto; display: flex; gap: 16px; flex-wrap: wrap; }
+.dt-foot .right { margin-left: auto; display: flex; gap: var(--sp-1) var(--sp-4); flex-wrap: wrap; }
+@media (min-width: 1141px) {       /* wide: the footer is ONE line (it fits; the ellipsis is only a guard) */
+  .dt-foot { flex-wrap: nowrap; }
+  .dt-foot .ps { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dt-foot .right { flex: none; }
+}
+@media (max-width: 1140px) {       /* narrower: prompt line over meta line, both on the tile edge — the prompt is never cut */
+  .dt-foot { flex-direction: column; align-items: flex-start; }
+  .dt-foot .right { margin-left: 0; }
+}
 
 .bar {
   position: fixed;
@@ -426,120 +617,100 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   z-index: 9000;
   height: var(--barh);
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  background: linear-gradient(180deg, var(--panel), color-mix(in srgb, var(--panel) 70%, var(--bg)));
-  border-bottom: 2px solid var(--line2);
-  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+  align-items: stretch;              /* i3bar: every block runs the full height of the bar */
+  padding: 0 var(--sp-1) 0 0;
+  background: var(--panel);          /* flat */
+  border-bottom: 2px solid var(--bd);
   font-family: var(--mono);
 }
-/* launcher — brand and "start button" in one block: λ lam.dev */
+/* launcher — brand and "start button" in one block: the full-colour mascot and
+   the OS wordmark on the bar itself; red stays reserved for the focused workspace */
 .bar-menu {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 16px;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4);
+  margin-right: var(--sp-2);
   font-family: var(--px);
-  font-size: 14px;
-  letter-spacing: 0.06em;
-  color: var(--ink);
-  background: var(--acc);
-  border: 1px solid color-mix(in srgb, var(--acc2) 70%, var(--line2));
-  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.22);
+  font-size: var(--px-1);
+  letter-spacing: 0;
+  color: var(--text);
+  background: transparent;
   cursor: pointer;
 }
+.bar-brand { font-weight: 400; line-height: 20px; }
 .bar-menu .l { display: inline-flex; line-height: 1; }
 .bar-menu .l svg { display: block; }
-.bar-menu:hover { background: var(--acc2); }
-.bar-menu:active { transform: translate(1px, 1px); box-shadow: none; }
+.bar-menu:hover, .bar-menu:focus-visible { background: var(--panel2); }
+.bar-menu:active { transform: translate(1px, 1px); }
 .bar-ws {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
 }
-/* workspace tabs = taskbar app buttons: real pixel app icon + title,
-   the running (active) app is raised with an indicator light underneath */
+/* workspace tabs = i3bar workspace buttons: real pixel app icon + title (the
+   order IS the number — the keys tile says 1..5). The focused workspace is a
+   soft accent tint with a polybar underline */
 .ws-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 12px;
-  font-size: 11.5px;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-3);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
   color: var(--dim);
   background: transparent;
-  border: 1px solid transparent;
   white-space: nowrap;
 }
 .ws-btn .ico { display: inline-flex; flex: none; }
-.ws-btn .ico svg { display: block; image-rendering: pixelated; opacity: 0.7; filter: saturate(0.7); }
-.ws-btn:hover { color: var(--text); background: color-mix(in srgb, var(--panel2) 70%, transparent); border-color: var(--line); }
-.ws-btn:hover .ico svg { opacity: 1; filter: none; }
+/* an inactive tab is told apart by its flat background and quiet label, not by
+   a washed-out icon: 0.7 opacity + saturate(0.7) drained the edge contrast the
+   art depends on (and the filter forced its own compositing layer) */
+.ws-btn .ico svg { display: block; opacity: 0.88; }
+.ws-btn:hover, .ws-btn:focus-visible { color: var(--text); background: var(--panel2); }
+.ws-btn:hover .ico svg, .ws-btn:focus-visible .ico svg { opacity: 1; }
 .ws-btn.on {
-  background: var(--panel2);
+  background: color-mix(in srgb, var(--acc) 12%, transparent);
   color: var(--text);
-  font-weight: 700;
-  border-color: var(--line2);
-  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.28), inset 0 1px 0 color-mix(in srgb, var(--hi, #fff) 6%, transparent);
+  box-shadow: inset 0 -2px 0 var(--acc);   /* polybar underline */
 }
-.ws-btn.on .ico svg { opacity: 1; filter: none; }
-.ws-btn.on::after {                /* the "app is running" indicator light */
-  content: "";
-  position: absolute;
-  left: 16%; right: 16%;
-  bottom: -1px;
-  height: 2px;
-  background: var(--wc, var(--acc));
-  box-shadow: 0 0 7px color-mix(in srgb, var(--wc, var(--acc)) 75%, transparent);
-}
+.ws-btn.on:hover { background: color-mix(in srgb, var(--acc) 16%, transparent); }
+.ws-btn.on .ico svg { opacity: 1; }
+/* full-height blocks touch the viewport edge: the focus ring sits INSIDE them */
+.bar-menu:focus-visible, .ws-btn:focus-visible, .bar-ico:focus-visible { outline-offset: -4px; }
+.ws-btn.on:focus-visible { outline-color: var(--acc); }
 .bar-tray {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
+  gap: 0;
   margin-left: auto;   /* pushes the tray to the right edge of the panel */
 }
-/* pixel-file icons in the tray — the desktop files moved up here */
-.bar-ico {
+/* waybar modules — bare pixel-file icons and the clock, not boxes */
+.bar-ico, .bar-seg {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 36px; height: 34px;
-  border: 1px solid transparent;
-  cursor: pointer;
-}
-.bar-ico:hover { border-color: var(--line2); background: var(--panel2); }
-.bar-ico:active { transform: translate(1px, 1px); }
-.bar-ico svg { display: block; image-rendering: pixelated; }
-.bar-sep { width: 1px; height: 22px; background: var(--line2); }
-/* polybar segment — one honest status block: the datetime, kept quiet
-   so the launcher stays the bar's single accent */
-.bar-seg {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 12px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-3);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  color: var(--dim);
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;   /* the segment never changes width */
-  border: 1px solid var(--line2);
 }
-.bar-seg.s-clock {
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 12px;
-  line-height: 1.35;
-  background: var(--panel2);
+.bar-ico { cursor: pointer; }
+.bar-ico .ico { display: inline-flex; flex: none; }
+.bar-ico:hover, .bar-ico:focus-visible { background: var(--panel2); }
+.bar-ico svg { display: block; }
+.bar-sep { width: 1px; height: 20px; align-self: center; margin: 0 var(--sp-3); background: var(--line2); }
+/* the clock — the one status module, in full ink */
+.bar-seg {
+  font-weight: 400;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;   /* the segment never changes width */
   color: var(--text);
 }
-.bar-seg.s-clock b { font-size: 11.5px; font-weight: 700; }
-.bar-seg.s-clock span { font-size: 11.5px; font-weight: 400; color: var(--dim); }
+.bar-seg span { color: var(--dim); }
 
 /* ---- rofi launcher ----------------------------------------------------- */
 .rofi {
@@ -549,18 +720,18 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   display: none;
   align-items: flex-start;
   justify-content: center;
-  padding: 12vh 16px 16px;
+  padding: 12vh var(--sp-4) var(--sp-4);
   /* heavier plain dim instead of backdrop blur — skips a GPU filter pass */
-  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
 }
-.rofi.open { display: flex; }
+.rofi.open { display: flex; animation: win-in 0.15s ease-out both; }
 .rofi-box {
   width: min(560px, 100%);
   background: var(--panel);
   border: 2px solid var(--acc);
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: 8px 8px 0 rgba(var(--sh), 0.35);
 }
-.rofi.open .rofi-box { animation: rofi-in 0.1s steps(2, end) both; }
+.rofi.open .rofi-box { animation: rofi-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @keyframes rofi-in {
   from { transform: translateY(-8px); opacity: 0; }
   to   { transform: none; opacity: 1; }
@@ -568,11 +739,11 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .rofi-input {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid var(--line);
 }
-.rofi-input b { color: var(--acc); font-size: 16px; }
+.rofi-input b { color: var(--acc); font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); font-weight: 400; }
 .rofi-input input {
   flex: 1;
   min-width: 0;
@@ -581,41 +752,49 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   outline: none;
   color: var(--text);
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: var(--fs-base);
+  font-weight: 500;
 }
-.rofi-list { max-height: 46vh; overflow-y: auto; padding: 8px; }
+.rofi-list { max-height: 46vh; overflow-y: auto; padding: var(--sp-2) 0; }
 .rofi-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-3);
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--sp-2) var(--sp-4);
   text-align: left;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--dim);
   cursor: pointer;
 }
 .rofi-item .k {
   flex: none;
   width: 58px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  letter-spacing: 0;
   color: var(--tc, var(--mute));
 }
 .rofi-item .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rofi-item.sel, .rofi-item:hover { background: var(--acc); color: var(--ink); }
-.rofi-item.sel .k, .rofi-item:hover .k { color: var(--ink); }
-.rofi-empty { padding: 16px; font-size: 12.5px; color: var(--mute); }
+.rofi-item.sel, .rofi-item:hover, .rofi-item:focus-visible {
+  background: color-mix(in srgb, var(--acc) 12%, transparent);
+  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--acc);
+}
+.rofi-item.sel .k, .rofi-item:hover .k, .rofi-item:focus-visible .k { color: var(--acc); }
+.rofi-empty { padding: var(--sp-4); font-size: var(--fs-sm); color: var(--mute); }
 .rofi-hint {
   display: flex;
-  gap: 16px;
-  padding: 8px 16px;
+  gap: var(--sp-4);
+  padding: var(--sp-2) var(--sp-4);
   border-top: 1px solid var(--line);
-  font-size: 11.5px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
   color: var(--mute);
 }
-.rofi-hint b { color: var(--dim); font-weight: 700; }
+.rofi-hint b { color: var(--dim); font-weight: 400; }
 
 /* ---- poweroff easter egg ----------------------------------------------- */
 .halt {
@@ -626,21 +805,29 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: var(--sp-4);
   background: #000;
   color: #9c9c8a;
   font-family: var(--mono);
   font-size: clamp(13px, 2.2vw, 17px);
   text-align: center;
-  padding: 16px;
+  padding: var(--sp-4);
   cursor: pointer;
 }
 .halt.on { display: flex; }
+@media (prefers-reduced-motion: no-preference) {
+  .halt.on { animation: crt-on 0.22s steps(3, end) both; }
+}
+@keyframes crt-on {
+  0% { transform: scaleY(0.04); opacity: 0; }
+  40% { transform: scaleY(0.04); opacity: 1; }
+  100% { transform: scaleY(1); opacity: 1; }
+}
 .halt b { color: #e8e6d9; }
 .caret {
   display: inline-block;
   width: 0.55em; height: 0.12em;
-  margin-left: 4px;
+  margin-left: var(--sp-1);
   background: currentColor;
   vertical-align: baseline;
   animation: blink 1.1s steps(1) infinite;
@@ -653,11 +840,16 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .fzf-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 24px;                /* > glyph sits on the 24px gutter */
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--gut);                 /* > glyph sits on the gutter */
   border-bottom: 1px solid var(--line);
 }
-.fzf-bar b { color: var(--acc); font-size: 14px; flex: none; }
+/* under a page header the search is a TOOLBAR band: one panel2 strip
+   between two firm --line2 rules, so header / search / results read as
+   separate zones, not one sheet. The /posts chips sit on paper BELOW the
+   band — a tinted search and a tinted filter row read as one glued block */
+.ph + .fzf-bar { background: var(--panel2); border-top: 1px solid var(--line2); border-bottom-color: var(--line2); }
+.fzf-bar b { color: var(--acc); font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); flex: none; }
 .fzf-bar input {
   flex: 1;
   min-width: 0;
@@ -666,103 +858,174 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   outline: none;
   color: var(--text);
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--fs-base);
+  font-weight: 500;
+  text-overflow: ellipsis;           /* a long placeholder ends in "…", never a sliced word */
 }
+/* the UA placeholder is a cold #757575 (3.78:1 on dark) — use the house mute */
+.fzf-bar input::placeholder, .rofi-input input::placeholder { color: var(--mute); opacity: 1; }
 .fzf-bar kbd {
   flex: none;
-  font-size: 10px;
-  padding: 1px 8px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  padding: 1px 6px;
   color: var(--mute);
-  border: 1px solid var(--line2);
+  /* a hint, not a control — its hairline sits a notch under the real ones */
+  border: 1px solid color-mix(in srgb, var(--line2) 55%, transparent);
 }
+/* the inputs kill their own outline (the caret is the whole look) — so the
+   BAR wears the focus ring instead: tabbing in is as loud as clicking in */
+.fzf-bar:focus-within {
+  outline: 2px solid var(--acc);
+  outline-offset: -2px;
+}
+/* rofi already sits in a 2px accent box and shows a caret — a second ring
+   inside it is a double frame, and the box + caret state focus */
+.rofi-input:focus-within { outline: 0; }
 
-.p-list { padding: 8px 16px 16px; }
-/* each row reads like an fzf hit: title + tag chip up top,
-   excerpt under it, then a dim "└─ meta" line closing the block */
+.p-list { padding: var(--sp-2) calc(var(--gut) - 14px) var(--sp-4); }   /* row text lands on the gutter: 2 rail + 12 row pad = 14 */
+.ph + .p-list { padding-top: 0; }
+/* each row reads like an fzf hit: the title, the excerpt under it, then ONE
+   dim "└─ date · category · read" line closing the block. The category is
+   spoken in its own tone, not boxed — a list of N posts is not N chips. */
 .p-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: 16px;
-  row-gap: 4px;
-  align-items: start;
-  padding: 12px 12px;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-areas: "tt tt tt" "date cat read";
+  row-gap: var(--sp-1);
+  align-items: baseline;
+  padding: var(--sp-3);
   border-left: 2px solid transparent;
 }
-.p-row + .p-row { border-top: 1px dashed color-mix(in srgb, var(--line2) 55%, transparent); }
+.p-row + .p-row { margin-top: var(--sp-2); }   /* Q2: rows are separated by space, not dashed rules */
 /* a pinned post is featured from across the room, not just by its star */
 .p-row:has(.pin) { background: color-mix(in srgb, var(--acc) 6%, transparent); }
-.p-row time { font-size: 11.5px; color: var(--mute); white-space: nowrap; }
-.p-row time { grid-column: 1; grid-row: 2; }
-.p-row time::before { content: '└─ '; color: color-mix(in srgb, var(--mute) 60%, transparent); }
-.p-tt { grid-column: 1; grid-row: 1; min-width: 0; }
+.p-row time { font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); color: var(--mute); white-space: nowrap; }
+.p-row time { grid-area: date; }
+.p-row time::before { content: '└─ '; font-family: var(--mono); font-size: var(--fs-meta); color: var(--mute); }
+.p-tt { grid-area: tt; min-width: 0; }
 .p-title {
   display: block;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--fs-base);
+  font-weight: 800;
   color: var(--text);
   line-height: 1.45;
+  text-wrap: pretty;
+  overflow-wrap: break-word;         /* a slug-shaped title can't escape */
 }
-.p-title .pin { color: var(--yellow); margin-right: 8px; }
+.p-title .pin { color: var(--yellow); margin-right: var(--sp-2); }
 .p-sub {
-  display: block;
-  max-width: 92ch;                   /* excerpts never run 160 chars */
-  font-size: 11.5px;
-  color: var(--mute);
+  /* the excerpt uses the row it sits in and breaks BALANCED — a 2-line excerpt
+     never strands one or two words on its last line */
+  text-wrap: balance;
+  font-size: var(--fs-meta);
+  color: var(--dim);
   line-height: 1.55;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-.p-cat { grid-column: 2; grid-row: 1; justify-self: end; }
-.p-read { grid-column: 2; grid-row: 2; font-size: 11.5px; color: var(--mute); text-align: right; white-space: nowrap; align-self: end; }
+.p-cat, .p-read { font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); white-space: nowrap; }
+.p-cat { grid-area: cat; color: var(--tc, var(--acc)); }
+.p-read { grid-area: read; color: var(--mute); }
+.p-cat::before, .p-read::before { content: '·'; padding: 0 var(--sp-2); color: var(--mute); }
 .p-row:hover, .p-row:focus-visible {
   background: var(--panel2);
   border-left-color: var(--tc, var(--acc));
+  border-left-width: 3px;
+  padding-left: 15px;                /* 12 + (3-2 rail growth) + 2 nudge, no reflow jump */
 }
-.p-row:hover .p-title { color: var(--tc, var(--acc)); }
+/* the hovered hit slides a hair toward the reader — the fzf cursor landing
+   on a line. Transform is opt-in per reduced-motion (not in the global set). */
+@media (prefers-reduced-motion: no-preference) {
+  .p-row { transition: transform 0.12s ease-out; }
+  .p-row:hover, .p-row:focus-visible { transform: translateX(2px); }
+}
+.p-row:hover .p-title, .p-row:focus-visible .p-title { color: var(--tc, var(--acc)); }
+/* the └─ tree glyph answers the hover in the row's tone — the whole block
+   lights as one object, meta ink itself stays quiet */
+.p-row:hover time::before, .p-row:focus-visible time::before { color: var(--tc, var(--acc)); }
 .p-empty {
-  padding: 24px 16px;
-  font-size: 12.5px;
+  padding: var(--sp-5) var(--sp-4);
+  font-size: var(--fs-sm);
   color: var(--mute);
   text-align: center;
   overflow-wrap: anywhere;           /* echoed query can be one long token */
 }
 .p-empty b { color: var(--text); }
+/* the knockout skull over the one-line shell message */
+.p-empty-ico { display: block; width: fit-content; margin: 0 auto var(--sp-3); }
+.p-empty-ico svg { display: block; }
+.null-out { display: flex; align-items: center; gap: var(--sp-5); margin: 0 0 var(--sp-4); }
+.null-out .p-empty-ico { flex: none; margin: 0; }
+/* Q3: the skull's pixel grid is 10 cols at 6px and column 0 is empty in every
+   row, so the bone starts 6px right of the rail — pull it back onto the rail */
+.null-out .p-empty-ico { margin-left: -6px; }
+.null-out .ph-path { letter-spacing: 0; }
+.null-body { font-family: var(--mono); padding-top: var(--sp-2); }
+.null-total { margin: 0; color: var(--dim); }
+.null-p { margin: 0 0 var(--sp-2); color: var(--dim); }
+.null-p + .null-p { margin-bottom: var(--sp-5); }
+.null-rm { color: var(--acc); }
 .p-more {
   display: block;
-  margin: 2px 8px 8px;
-  padding: 8px 12px;
+  margin: var(--sp-1) 0 var(--sp-2);   /* its box hangs on the same edge as the row highlights */
+  padding: 4px 12px;
   text-align: center;
-  font-size: 11.5px;
-  font-weight: 700;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  font-weight: 400;
   color: var(--dim);
   border: 1px dashed var(--line2);
 }
-.p-more:hover { color: var(--acc); border-color: var(--acc); }
+.p-more:hover, .p-more:focus-visible { color: var(--acc); border-color: var(--acc); }
 
 /* ==================================================================== */
 /*  PAGE HEADER (inside a window)                                        */
 /* ==================================================================== */
-.ph { padding: 24px 24px 12px; }
-.ph-path { margin: 0 0 12px; font-size: 11.5px; letter-spacing: 0.08em; color: var(--mute); }
+.ph { padding: var(--sp-5) var(--gut) var(--sp-4); }
+.ph-path { margin: 0 0 var(--sp-3); font-size: var(--fs-meta); letter-spacing: 0.08em; color: var(--mute); }
 .ph-path b { color: var(--green); }
 .ph-title {
-  margin: 0 0 8px;
+  position: relative;
+  margin: 0 0 var(--sp-4);           /* Q2: 16px to the lede — the same gap as .nf-title */
   font-family: var(--px);
   font-weight: 400;
   font-size: var(--fs-display);
-  line-height: 1;
+  /* a whole 4px step (48 → 56, 32 → 36): clears the drop-shadow when a title wraps */
+  line-height: var(--lh-display);
+  letter-spacing: 0;                 /* glyph advances are whole cells — any tracking would land between pixels */
+  text-wrap: balance;
   color: var(--text);
   text-shadow: 3px 3px 0 color-mix(in srgb, var(--cv, var(--acc)) 26%, transparent);
 }
-.ph-title .a { color: var(--acc); }
-.ph-sub { margin: 0; font-size: 16px; color: var(--dim); max-width: 74ch; }
+/* Q1: the fetch headline's two tones — the last word (+ caret) wears the
+   window's own voice (--cv, else red), exactly like .nf-title .a; the lead
+   words stay ink. A single-word title is therefore all voice. */
+.ph-title .caret { background: var(--cv, var(--acc)); }
+/* the caret is a pixel block too: 1/2 × 1/8 em is a whole number of px at 32/48/64 */
+.ph-title .caret, .nf-title .caret { width: 0.5em; height: 0.125em; }
+/* last word + caret travel as one token so the _ can't wrap alone — see .nf-title */
+.ph-title .nowrap {
+  white-space: nowrap;
+  color: var(--cv, var(--acc));
+  text-shadow: 4px 4px 0 color-mix(in srgb, var(--cv, var(--acc)) 22%, transparent);
+}
+.ph-sub { margin: 0; font-size: var(--fs-lede); line-height: 1.6; color: var(--dim); max-width: 68ch; text-wrap: pretty; }
+/* Q2/Q4: a bolded phrase in the lede is ink — the .nf-lede b treatment */
+.ph-sub b, .ph-sub strong { color: var(--text); font-weight: 800; }
+/* inline links inside page-header subtitles — one rule, no per-page style= */
+.ph-sub a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.ph-sub a:hover, .ph-sub a:focus-visible { color: var(--acc); }
 
 /* ==================================================================== */
-/*  HOME — tiled workspace with a desktop-icon rail                      */
+/*  HOME — tiled workspace                                               */
 /* ==================================================================== */
-/* i3 tree: V[ H[ hero | V[monitor keys] ] list ] — one closed rectangle */
+/* i3 tree: V[ H[ hero | V[monitor tags keys] ] list ] — one closed rectangle */
 .hm {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
@@ -776,52 +1039,65 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .hm-side  { grid-area: side; display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
 .w-recent { grid-area: list; }
 /* height coupling: monitor absorbs the side column's stretch; inside the
-   hero the CTA row pins to the bottom edge; the fzf list absorbs row 2 */
+   hero the fetch band (table + mascot) pins to the bottom edge; the fzf list
+   absorbs row 2 */
 .hm-side .w-mon { flex: 1 1 auto; }
-.w-fetch > .win-body, .w-mon > .win-body { display: flex; flex-direction: column; }
-.w-fetch .nf-cta { margin-top: auto; padding-top: 24px; }
-.w-mon .cbars { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
+.w-mon > .win-body { display: flex; flex-direction: column; }
+.w-mon .cbars { flex: none; display: flex; flex-direction: column; justify-content: flex-start; gap: var(--sp-3); }
 .w-recent .p-list { flex: 1 1 auto; }
+@media (min-width: 1141px) {
+  .w-recent .p-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2) var(--gap); }
+  .w-recent .p-row + .p-row { margin-top: 0; }
+  .w-recent .p-more { grid-column: 1 / -1; }
+  .w-recent .p-title { font-size: var(--fs-lede); line-height: 24px; }   /* the list's anchor: titles a step up, still far under the 64px hero */
+}
 .w-recent .p-empty { flex: 1; display: grid; place-items: center; }
+/* TILE HIERARCHY on the home desk. fetch is tier 1 (2px red frame + 6px
+   dither, the one texture). Every other home tile is tier 2: a firmer neutral
+   frame and a flat 4px ledge, the same solid-shadow vocabulary as floating
+   surfaces, one rank lower. They hold their own; they never out-rank fetch. */
+.hm .win:not(.focus) {
+  --bd-t: color-mix(in srgb, var(--text) 8%, var(--line2));
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--line2) 70%, transparent);
+}
 
 /* dunst-style notification */
 .toast {
   position: fixed;
-  top: calc(var(--barh) + 12px);
-  right: 14px;
+  top: calc(var(--barh) + var(--sp-3));
+  right: var(--edge);
   z-index: 9800;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  max-width: calc(100vw - 28px);     /* keep the dunst corner look on phones */
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  max-width: calc(100vw - 2 * var(--edge));     /* keep the dunst corner look on phones */
   font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-chrome);
   color: var(--text);
   background: var(--panel);
   border: 2px solid var(--acc);
-  border-left-width: 6px;
-  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
-  animation: toast-in 0.15s steps(1, end) both;
+  box-shadow: 8px 8px 0 rgba(var(--sh), 0.35);   /* floats, like .tw / .rofi-box */
+  animation: toast-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-@keyframes toast-in {                 /* dunst slide-snap from the corner */
-  0%        { transform: translateX(14px); }
-  33%       { transform: translateX(5px); }
-  66%, 100% { transform: none; }
+@keyframes toast-in {                 /* dunst slide-in from the corner */
+  from { transform: translateX(14px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
 }
 /* scripted decay before React unmounts at 1500ms; wrapped so reduced-motion
    users never inherit a permanently invisible toast from the global nuke */
 @media (prefers-reduced-motion: no-preference) {
   .toast {
     animation:
-      toast-in  0.15s steps(1, end) both,
-      toast-out 0.1s  steps(2, end) 1.3s both;
+      toast-in  0.2s  cubic-bezier(0.16, 1, 0.3, 1) both,
+      toast-out 0.15s ease-in 1.3s both;
   }
 }
 @keyframes toast-out {
   to { opacity: 0; transform: translateY(-6px); }
 }
-.toast b { color: var(--acc); }
+.toast b { color: var(--acc); font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); font-weight: 400; }
 .toast .g { color: var(--green); }
 
 /* ONE-RECTANGLE RULE: no per-page width caps — every workspace's windows
@@ -832,40 +1108,66 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 /* ==================================================================== */
 .pd {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(380px, 34vw, 540px);
+  grid-template-columns: minmax(0, 1fr) clamp(380px, 42vw, 640px);
   align-items: stretch;
   flex: 1;
-  min-height: 0;
+  min-height: 320px;                 /* an empty filter keeps the window from collapsing */
 }
-.pd-list { min-width: 0; border-right: 1px solid var(--line); padding: 8px 16px 16px; display: flex; flex-direction: column; }
+.pd-list { min-width: 0; border-right: 1px solid var(--line2); padding: var(--sp-2) calc(var(--gut) - 14px) var(--sp-4); display: flex; flex-direction: column; }
+/* full screen: the list always reserves FIVE rows (PAGE = 5 in PostsShell), at
+   the tallest row height (a 2-line excerpt: 104px) plus the 8px row gaps — a
+   short page or a filter leaves empty room at the bottom instead of shrinking
+   the window; the pager's 37px strip is ALWAYS reserved (pinned last), so a
+   filter that drops the pager doesn't move the window either. Every row is
+   ONE fixed height (fzf: one line per hit): title 20 + excerpt 18 (a single
+   line, ellipsis) + 4 + meta 20 + 12/12 padding = 86px, so five rows fill the
+   reserve exactly and a full page has no slack at the bottom */
+@media (min-width: 1141px) {
+  .pd-list .p-title { line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pd-list .p-sub { display: block; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pd-list { min-height: calc(5 * 86px + 4 * var(--sp-2) + var(--sp-2) + var(--sp-4) + 37px); }
+}
 /* category filter chips under the fzf bar */
 .pd-chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--line);
-  font-size: 11.5px;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--gut);
+  border-bottom: 1px solid var(--line2);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
   color: var(--mute);
 }
 .pd-chip {
+  position: relative;                /* anchors the coarse-pointer hit area */
   display: inline-flex;
   align-items: baseline;
-  gap: 8px;
-  padding: 2px 12px;
-  font-size: 11.5px;
-  line-height: 1.6;
-  font-weight: 700;
+  gap: var(--sp-2);
+  padding: 1px 10px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  font-weight: 400;
   color: var(--tc, var(--dim));
-  border: 1px solid color-mix(in srgb, var(--tc, var(--line2)) 50%, transparent);
-  background: color-mix(in srgb, var(--tc, var(--line2)) 10%, transparent);
+  /* identical rest metrics to .chip — a filter chip and a category chip are
+     the same object wearing different jobs (55%/12%, not 50%/10%) */
+  border: 1px solid color-mix(in srgb, var(--tc, var(--line2)) 55%, transparent);
+  background: color-mix(in srgb, var(--tc, var(--line2)) 12%, transparent);
   cursor: pointer;
 }
-.pd-chip .n { font-weight: 400; font-size: 10px; color: var(--mute); }
-.pd-chip:hover { border-color: var(--tc, var(--acc)); }
-.pd-chip[aria-pressed="true"] { background: var(--tc, var(--acc)); color: var(--ink); }
-.pd-chip[aria-pressed="true"] .n { color: var(--ink); }
+.pd-chip .n { font-weight: 400; font-size: var(--px-1); color: var(--mute); }
+.pd-chip:hover, .pd-chip:focus-visible {  /* sibling of a.chip:hover, to the pixel */
+  border-color: var(--tc, var(--acc));
+  color: var(--tc, var(--acc));
+}
+.pd-chip[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--tc, var(--acc)) 24%, transparent);
+  border-color: var(--tc, var(--acc));
+  color: var(--text);
+}
+.pd-chip[aria-pressed="true"] .n { color: var(--text); }
 /* the list speaks the same .p-row grammar as home and the tag pages;
    the BOX is a state, not a default — the row the preview follows
    wears it (fzf: current line is highlighted, others are plain) */
@@ -878,8 +1180,6 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .pd-list .p-row.sel {
   background: var(--panel2);
   border-left-color: var(--tc, var(--acc));
-  outline: 1px solid var(--line2);
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
 }
 .pd-list .p-row.sel .p-title { color: var(--tc, var(--acc)); }
 /* less-style pager at the foot of the list */
@@ -887,55 +1187,42 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 4px;
-  padding-top: 12px;
+  gap: var(--sp-3);
+  margin-top: auto;                  /* pinned to the bottom of the reserved list */
+  padding: var(--sp-3) 14px 0;       /* the buttons stand on the rows' text rail (2px rail + 12px row pad) */
   border-top: 1px dashed var(--line2);
 }
 .pgr button {
-  padding: 4px 12px;
-  font-size: 11.5px;
-  font-weight: 700;
+  padding: 1px 10px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  font-weight: 400;
   color: var(--dim);
   border: 1px solid var(--line2);
-  background: var(--panel2);
+  background: none;                  /* the sm-button metric, to the pixel */
   cursor: pointer;
 }
-.pgr button:hover:not(:disabled) { color: var(--acc); border-color: var(--acc); }
-.pgr button:active:not(:disabled) { transform: translate(1px, 1px); }
+.pgr button:hover:not(:disabled), .pgr button:focus-visible:not(:disabled) { color: var(--acc); border-color: var(--acc); }
 .pgr button:disabled { opacity: 0.4; cursor: default; }
-.pgr-lb { font-size: 11.5px; color: var(--mute); text-align: center; }
+.pgr-lb { font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); color: var(--mute); text-align: center; font-variant-numeric: tabular-nums; }
 /* preview pane */
-.pv { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
-.pv-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 16px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: var(--mute);
-  border-bottom: 1px solid var(--line);
-}
-.pv-head .f {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  color: var(--dim);
-}
+.pv { display: flex; flex-direction: column; min-width: 0; contain: size; background: var(--panel2); }   /* the
+   preview is the OTHER pane (fzf --preview): a panel2 fill, the same tone
+   as the selected row it follows, behind the firm .pd-list rule; the list
+   stays on paper. contain: size = the
+   preview adds nothing to the window's height: the LIST sizes the row, the
+   preview scrolls inside it. */
 .pv-in {
   position: sticky;
   top: calc(var(--barh) + var(--gap));
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-  max-height: calc(100vh - var(--barh) - var(--gap) * 2 - 34px);
+  gap: var(--sp-4);
+  padding: calc(var(--sp-2) + var(--sp-3)) var(--gut) var(--sp-5);   /* top: the title shares the first list row's title top */
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: calc(100vh - var(--barh) - var(--gap) * 2);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--line2) transparent;
@@ -948,53 +1235,87 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 }
 .pv-title {
   margin: 0;
-  font-family: var(--px);
-  font-weight: 400;
-  font-size: 26px;
-  line-height: 1.15;
+  font-family: var(--mono);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: 28px;
+  letter-spacing: 0;
+  text-wrap: balance;
+  overflow-wrap: break-word;         /* the preview pane is only ~380px wide */
   color: var(--text);
+  text-shadow: none;
 }
-.pv-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 11.5px; color: var(--mute); }
-.pv-x {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--dim);
-  border-left: 2px solid color-mix(in srgb, var(--tc, var(--line2)) 45%, transparent);
-  padding-left: 12px;
-}
-/* peek — bat-style: numbered lines on the terminal background. The bottom
-   fade sinks into the glass's OWN background (matches .md-code), never
-   dissolves into the page — that read as a glitch on paper */
+/* peek — one bat window: the filename is its title bar (the .md-code-bar
+   dialect), the numbered lines sit on the terminal background below it.
+   The bottom fade sinks into the glass's OWN background (matches .md-code),
+   never dissolves into the page — that read as a glitch on paper */
 .pv-peek {
-  position: relative;
+  flex: 0 1 auto;                    /* shrinks to the room left under the title... */
+  min-height: 120px;                 /* ...but never below bar + 2 lines + eof */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   margin: 0;
-  padding: 16px 16px 32px;
-  font-size: 13px;
+  padding: 0;                        /* the frame only; the body pads itself */
+  border: 1px solid var(--line2);    /* one frame weight, as .md-code */
+}
+.pv-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 28px;                   /* one height for every sub-window bar */
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
+  background: var(--panel2);
+  border-bottom: 1px solid var(--line);
+  color: var(--dim);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.pv-bar::before {                   /* app dot */
+  content: "";
+  flex: none;
+  width: 9px; height: 9px;
+  background: var(--acc);
+  box-shadow: none;
+}
+.pv-bar b { color: var(--acc); font-weight: 400; }
+.pv-bar .f { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--sp-4);
+  font-size: var(--fs-sm);
   line-height: 1.75;
   background: var(--term);
-  border: 1px solid var(--line);
-  border-left: 2px solid var(--tc, var(--line2));
+  /* same CRT glass as .md-code-pre — one texture across every terminal */
+  background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
   max-height: 280px;
   overflow: hidden;
 }
-.pv-peek::after {
+.pv-body::after {
   content: "";
   position: absolute;
   inset: auto 0 0;
-  height: 56px;
+  /* the fade covers only the bottom padding: a paragraph that fits stays
+     crisp, and only text actually cut off by the pane dissolves */
+  height: var(--sp-4);
   pointer-events: none;
-  background: linear-gradient(to bottom, transparent, var(--term) 78%);
+  background: linear-gradient(to bottom, transparent, var(--term));
 }
-.pv-ln { display: flex; gap: 12px; }
-.pv-ln + .pv-ln { margin-top: 8px; }
+.pv-ln { display: flex; gap: var(--sp-3); }
+.pv-ln + .pv-ln { margin-top: var(--sp-2); }
 .pv-ln .n {
   flex: none;
   width: 18px;
   text-align: right;
-  padding-right: 12px;
+  padding-right: var(--sp-3);
   border-right: 1px solid color-mix(in srgb, var(--term-txt) 12%, transparent);
-  color: color-mix(in srgb, var(--term-txt) 40%, transparent);
+  color: color-mix(in srgb, var(--term-txt) var(--gutter-ink), transparent);
   user-select: none;
 }
 .pv-ln .t {
@@ -1003,106 +1324,180 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 }
 /* vim tilde column: the "there is more" affordance, above the fade */
 .pv-eof {
-  position: relative;
-  z-index: 1;
-  margin-top: 12px;
-  font-size: 11.5px;
+  flex: none;                        /* the last line of the bat window: never clipped */
+  padding: var(--sp-2) var(--sp-4) var(--sp-3);
+  background: var(--term);
+  background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
+  font-size: var(--fs-meta);
+  line-height: 1.75;
   letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--term-acc) 60%, transparent);
+  /* 60% red washed out to ~2.5:1 on the light paper — this line is the
+     "there is more" affordance, so it gets the full accent */
+  color: var(--term-acc);
 }
-.pv-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-.pv-open { margin-top: auto; justify-content: center; }
-.pv-empty { padding: 24px 16px; font-size: 11.5px; color: var(--mute); text-align: center; }
+.pv-tags { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.pv-open { margin-top: auto; align-self: flex-start; justify-content: center; }   /* Q1: a compact CTA like fetch's, not a full-width bar */
+.pv-empty { padding: var(--sp-5) var(--gut); font-size: var(--fs-meta); color: var(--mute); text-align: left; }
 
 /* neofetch */
-.nf { display: flex; align-items: center; gap: clamp(16px, 3vw, 32px); flex-wrap: wrap; }
-.nf-art { flex: none; display: inline-flex; image-rendering: pixelated; filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.35)); }
+/* no image-rendering here: it does nothing for SVG geometry (that is what
+   shape-rendering="crispEdges" on the svg itself is for) */
+.nf-art { flex: none; display: inline-flex; filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.35)); }
 .nf-info { flex: 1; min-width: 240px; }
-.nf-head { font-size: 13px; font-weight: 700; margin: 0 0 2px; }
-.nf-head b { color: var(--acc); }
+/* the hero tile: headline, lede and CTA share the left rail; below them the
+   fetch band — table on the left, Skelamton on the right standing on the
+   tile's bottom border (no padding under it, so the border is the floor).
+   On a phone the mascot moves
+   up beside the headline. */
+.w-fetch > .win-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto 1fr;
+  grid-template-areas: "title title" "lede lede" "cta cta" "info art";
+  column-gap: clamp(24px, 5vw, 56px);
+  padding-bottom: 0;
+}
+.w-fetch .nf-title { grid-area: title; }
+.w-fetch .nf-lede  { grid-area: lede; }
+.w-fetch .nf-cta   { grid-area: cta; }
+.w-fetch .nf-info  { grid-area: info; align-self: end; min-width: 0; padding: var(--sp-5) 0; }
+.w-fetch .nf-art   { grid-area: art; align-self: end; margin-right: var(--sp-5); }   /* stands off the corner, not in it */
+/* the hero mark is the 16x17 mascot, so its box may only ever be a WHOLE
+   multiple of that grid — fractional sizes resample every edge (cell 10/12/4).
+   Drawn on the tile, not dropped: a shadow would fall through the floor. */
+.w-fetch .nf-art, [data-palette="light"] .w-fetch .nf-art { filter: none; }
+.w-fetch .nf-art :is(svg, .av-img) { display: block; width: 160px; height: 170px; }
+@media (min-width: 1200px) { .w-fetch .nf-art :is(svg, .av-img) { width: 192px; height: 204px; } }
+@media (min-width: 1400px) { .w-fetch .nf-art :is(svg, .av-img) { width: 240px; height: 255px; } }
+/* an owner image (blog.config.ts avatar) takes the mascot's exact box and is
+   cropped to fill it — a square photo loses a sliver, nothing is stretched */
+.av-img { display: block; object-fit: cover; }
+/* the blink — Skelamton's red pupils go dark for ~120ms every 7s. The
+   renderer merges same-colour runs, so the pupils have no element of their
+   own: two sockets-coloured (#1b1b1b, fixed like the art) squares sit exactly
+   on the pupil cells (row 8, cols 6 + 9 of the 16x17 grid) inside .nf-art,
+   which is exactly the svg's box. Percentages of that box, so they follow
+   the cell size (4/10/12/15px) at every breakpoint. Reduced motion: the
+   squares never animate and stay transparent. */
+.nf-art { position: relative; }
+.nf-eye {
+  position: absolute;
+  top: calc(100% * 8 / 17);
+  width: calc(100% / 16); height: calc(100% / 17);
+  background: #1b1b1b;
+  opacity: 0;
+  pointer-events: none;
+}
+.nf-eye.l { left: calc(100% * 6 / 16); }
+.nf-eye.r { left: calc(100% * 9 / 16); }
+@media (prefers-reduced-motion: no-preference) {
+  .nf-eye { animation: nf-blink 7s steps(1) infinite; }
+}
+@keyframes nf-blink {
+  0%, 97.5% { opacity: 0; }
+  97.6%, 99.2% { opacity: 1; }
+  99.3%, 100% { opacity: 0; }
+}
+.nf-head { font-size: var(--fs-sm); font-weight: 800; margin: 0 0 var(--sp-1); }
+/* identity prints green — the same voice as the footer prompt and the
+   about shell's PS1: green is always "who", red is always "where" */
+.nf-head b { color: var(--green); }
 .nf-head .h { color: var(--dim); font-weight: 400; }
-.nf-rule { color: var(--mute); font-size: 11.5px; margin: 0 0 8px; }
-.nf-rows { display: flex; flex-direction: column; gap: 1px; font-size: 12.5px; line-height: 1.2; }
-.nf-rows .r { display: flex; gap: 12px; }
-.nf-rows .k { flex: none; width: 88px; font-weight: 700; color: var(--tc, var(--acc)); }
+.nf-rule { color: var(--mute); font-size: var(--fs-sm); margin: 0 0 var(--sp-2); }
+/* one 20px line box for the pixel keys and the mono values beside them — the
+   Packages row wraps in a narrow column and the lines must not touch */
+.nf-rows { display: flex; flex-direction: column; font-size: var(--fs-sm); line-height: var(--lh-chrome); }
+.nf-rows .r { display: flex; align-items: baseline; gap: var(--sp-3); }
+.nf-rows .k { flex: none; width: 88px; font-family: var(--px); font-size: var(--px-1); font-weight: 400; color: var(--tc, var(--acc)); }
 .nf-rows .v { color: var(--dim); min-width: 0; }
-.nf-rows .v a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.nf-rows .v a { white-space: nowrap; color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.nf-rows .v a:hover, .nf-rows .v a:focus-visible { color: var(--acc); }
 .nf-title {
-  margin: 4px 0 16px;
+  margin: var(--sp-1) 0 var(--sp-4);
   font-family: var(--px);
   font-weight: 400;
-  font-size: clamp(28px, 4.6vw, 46px);
-  line-height: 1.02;
-  letter-spacing: 0.02em;
+  font-size: var(--fs-hero);         /* 64 desktop / 48 tablet / 32 phone — see RESPONSIVE */
+  line-height: var(--lh-hero);
+  letter-spacing: 0;
+  text-wrap: balance;
   color: var(--text);
   text-shadow: 3px 3px 0 color-mix(in srgb, var(--acc) 30%, transparent);
 }
-.nf-title .a { color: var(--acc); }
-.nf-lede { margin: 0 0 16px; max-width: 70ch; font-size: 13px; color: var(--dim); }
+/* the accent line is the headline's punch — it earns a harder shadow than
+   the neutral first line, so "COMPILED FROM SOURCE" reads as the promise */
+.nf-title .a { color: var(--acc); text-shadow: 4px 4px 0 color-mix(in srgb, var(--acc) 22%, transparent); }
+/* last word + blinking caret travel as one token — see HomeShell */
+.nf-title .nowrap { white-space: nowrap; }
+.nf-lede { margin: 0 0 var(--sp-5); max-width: var(--measure); font-size: var(--fs-lede); line-height: 1.65; color: var(--dim); text-wrap: pretty; }
 .nf-lede b { color: var(--text); }
-.nf-cta { display: flex; flex-wrap: wrap; gap: 8px; }
+/* neofetch color blocks — the ANSI palette strip every fetch output ends
+   on: ground, the six category tones, ink. Pure legend, zero chrome. */
+.nf-pal { display: flex; gap: 3px; margin-top: var(--sp-4); }
+.nf-pal i { width: 18px; height: 12px; border: 1px solid color-mix(in srgb, var(--line2) 45%, transparent); }
+.nf-cta { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
 
-/* htop-ish monitor */
-.w-keys .win-body { padding: 16px 24px; }
-.w-keys .nf-rows { font-size: 11.5px; }
+/* trending tags — chirpy's panel wearing the tagchip system */
+.tcloud { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+/* btop-ish monitor */
+.w-keys .nf-rows { font-size: var(--fs-sm); }
 .w-keys .nf-rows .k { width: 64px; }
 .mon-lbl {
   display: flex;
   justify-content: space-between;
-  font-size: 11.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mute);
-  margin: 16px 0 8px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  letter-spacing: 0;
+  color: var(--acc);                 /* Q5: the label is its section's key — red, like .nf-rows .k */
+  margin: var(--sp-4) 0 var(--sp-2);
 }
-.cbars { display: flex; flex-direction: column; gap: 4px; }
+.mon-lbl > span + span { color: var(--mute); }   /* the right-hand count stays quiet data */
+.cbars { display: flex; flex-direction: column; gap: var(--sp-1); margin-inline: calc(var(--sp-1) * -1); }
 .cbar {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr) 34px;
-  gap: 12px;
+  grid-template-columns: 104px minmax(0, 1fr) 34px;
+  gap: var(--sp-3);
   align-items: center;
   padding: 2px 4px;
-  font-size: 11.5px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
 }
-.cbar:hover { background: var(--panel2); }
+.cbar:hover, .cbar:focus-visible { background: var(--panel2); }
 .cbar .nm { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cbar:hover .nm { color: var(--tc, var(--acc)); }
+.cbar:hover .nm, .cbar:focus-visible .nm { color: var(--tc, var(--acc)); }
+.cbar:hover .n, .cbar:focus-visible .n { color: var(--tc, var(--acc)); }
 .cbar .tr {
   display: flex;
   gap: 2px;
-  height: 10px;
+  height: 12px;                      /* btop's anchor: a meter you read at a glance */
 }
-.cbar .tr i { flex: 1; background: var(--line); }
+.cbar .tr i { flex: 1; flex: 0 0 round(down, (100% - 18px) / 10, 1px); background: var(--line); }   /* whole-pixel steps: 10 cells + 9 x 2px gaps */
 .cbar .tr i.on { background: var(--tc, var(--acc)); }
-.cbar .n { color: var(--mute); font-size: 11.5px; text-align: right; }
+.cbar .n { color: var(--mute); text-align: right; }
+/* posts per month — 12 columns of category-toned blocks standing on a 2px
+   baseline; an empty month is just the baseline */
+.spark-lbl { margin-top: var(--sp-5); }
+.spark { display: flex; align-items: stretch; gap: var(--sp-1); height: 48px; }
+.sp-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column-reverse;    /* first post sits on the baseline */
+  gap: 1px;
+  border-bottom: 2px solid var(--line2);
+}
+.sp-col i { display: block; }
+.w-mon .spark { flex: 1 0 48px; height: auto; }   /* the monitor tile's stretch goes to the chart */
+.spark-ax { display: flex; justify-content: space-between; margin-top: var(--sp-1); font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); color: var(--mute); }
 
 
 /* ==================================================================== */
 /*  CATEGORIES — a Nautilus window: folder icons, click one to open it   */
 /* ==================================================================== */
-.fm { padding: 0 0 16px; }
-/* pathbar — back/forward, breadcrumb, item count */
-.fm-bar {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  margin: 0 0 16px;
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--line);
-  background: var(--panel2);
-  font-size: 11.5px;
-  color: var(--mute);
-}
-.fm-nav { display: flex; gap: 8px; user-select: none; }
-.fm-nav i { font-style: normal; opacity: 0.45; }
-.fm-nav a { font-weight: 700; color: var(--link); }
-.fm-nav a:hover { color: var(--acc); }
-.fm-path { display: flex; align-items: baseline; gap: 8px; }
-.fm-path a { color: var(--link); }
-.fm-path a:hover { text-decoration: underline; text-underline-offset: 2px; }
-.fm-path i { font-style: normal; opacity: 0.5; }
-.fm-path b { color: var(--text); }
-.fm-info { margin-left: auto; font-size: 11.5px; }
+.fm { padding: 0 0 var(--gut); }
+.ph + .fm { padding-top: var(--sp-2); }
 /* pixel-art tint hooks — every fm surface derives its folder/file colors
    from its own --tc */
 .fm-dir, .fm-panel, .fm-file {
@@ -1115,31 +1510,43 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .fm-tree {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 24px;
+  gap: var(--sp-2);
+  padding: 0 var(--gut);
 }
 .fm-node { display: flex; flex-direction: column; }
-.fm-node .fm-panel { margin: 8px 0 4px 24px; }
+/* the trunk drops from the parent folder icon's centre, as `tree` prints it:
+   2px rail + 12px pad + half the 28px icon = 28px */
+.fm-node .fm-panel { margin: 0 0 var(--sp-1) 28px; padding-top: var(--sp-2); }
 /* every row in the manager shares one bar shape — a row is either a
    DIRECTORY (FolderCard) or a document (FileCard), at any depth */
 .fm-dir, .fm-file {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--panel2) 45%, var(--panel));
 }
+/* Q2: a document is a leaf of the printed tree, not a card — no box, no fill;
+   only the hover wash (below) and the title colour mark it. Folders stay boxed. */
+.fm-file { border: 0; background: transparent; align-items: flex-start; }
+/* each directory wears its category tone as the 2px left rail — the same
+   accent-rail law as .p-row and .pv-peek; "../" stays gray via .fm-up */
+.fm-dir { border-left: 2px solid color-mix(in srgb, var(--tc, var(--line2)) 70%, transparent); }
 .fm-dir .fm-ico, .fm-file .fm-ico { flex: none; }
 /* a directory is closed by default; it opens on hover and while expanded */
 .fm-dir .ico-open { display: none; }
 .fm-dir:hover .ico-closed,
+.fm-dir:focus-visible .ico-closed,
 .fm-dir[aria-expanded="true"] .ico-closed,
 .fm-dir[aria-current="page"] .ico-closed { display: none; }
 .fm-dir:hover .ico-open,
+.fm-dir:focus-visible .ico-open,
 .fm-dir[aria-expanded="true"] .ico-open,
 .fm-dir[aria-current="page"] .ico-open { display: block; }
+.fm-file .fm-name { font-size: var(--fs-base); }
 .fm-dir .fm-name {
+  font-size: var(--fs-base);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1150,102 +1557,110 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   color: var(--mute);
 }
+.fm-dir[aria-expanded="true"] .fm-dd, .fm-dir[aria-current="page"] .fm-dd { color: var(--dim); }
+/* the count is bare ink in the folder's own tone — no box */
 .fm-dir .fm-n {
-  padding: 0 8px;
-  border: 1px solid color-mix(in srgb, var(--line2) 70%, transparent);
-  font-size: 10px;
-  line-height: 1.8;
+  padding: 1px 0;
+  color: var(--tc, var(--mute));
+  border: 0;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
 }
-.fm-dir:hover, .fm-file:hover, .fm-file:focus-visible { border-color: var(--line2); background: var(--panel2); }
-.fm-dir:hover .fm-name, .fm-file:hover .fm-name { color: var(--tc, var(--acc)); }
-.fm-dir:active, .fm-file:active { transform: translate(1px, 1px); }
+.fm-dir:hover, .fm-dir:focus-visible, .fm-file:hover, .fm-file:focus-visible { border-color: var(--tc, var(--acc)); background: var(--panel2); }
+.fm-dir:hover .fm-name, .fm-dir:focus-visible .fm-name,
+.fm-file:hover .fm-name, .fm-file:focus-visible .fm-name { color: var(--tc, var(--acc)); }
 .fm-dir[aria-expanded="true"],
 .fm-dir[aria-current="page"] {
-  border-color: var(--tc, var(--acc));
-  background: color-mix(in srgb, var(--tc, var(--acc)) 9%, var(--panel2));
+  border-color: color-mix(in srgb, var(--tc) 55%, var(--line2));
+  background: color-mix(in srgb, var(--tc, var(--acc)) 10%, var(--panel2));   /* the pressed wash */
 }
+.fm-dir[aria-expanded="true"], .fm-dir[aria-current="page"] { border-left-color: var(--tc); }   /* full-tone rail on the open bar */
+/* F6: the current folder's own page already says its blurb and count */
+.fm-dir[aria-current="page"] .fm-dd, .fm-dir[aria-current="page"] .fm-n { display: none; }
 .fm-dir[aria-expanded="true"] .fm-name,
 .fm-dir[aria-current="page"] .fm-name { color: var(--tc, var(--acc)); }
-/* the open folder's pane */
-.fm-panel { border: 1px solid var(--line2); background: var(--panel); }
+/* the open folder's pane — Q2: an indented tree, not a box inside a box:
+   the 1px trunk is the only line, the rows hang off it */
+.fm-panel { border: 0; border-left: 1px solid var(--line2); background: none; }
 .fm-panel.swap { animation: pv-swap 0.12s steps(2, end) both; }
 /* the pane lists its contents vertically — nautilus list view */
 .fm-files {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 12px 12px;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-3) 0;
 }
-/* the pane's escape hatch to the folder's own page */
-.fm-open {
-  align-self: flex-end;
-  padding-top: 2px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--tc, var(--acc));
-}
-.fm-open:hover { text-decoration: underline; text-underline-offset: 3px; }
 .fm-ico svg { display: block; }
 .fm-name {
   min-width: 0;
   font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fs-sm);
+  font-weight: 800;
   line-height: 1.5;
   letter-spacing: 0.01em;
   color: var(--text);
 }
-.fm-n { margin-left: auto; font-size: 11.5px; color: var(--mute); white-space: nowrap; }
+.fm-n { margin-left: auto; font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); color: var(--mute); white-space: nowrap; }
 /* a pinned post keeps its star — the only adornment a document gets */
 .fm-file .pin { color: var(--yellow); }
 /* the "../" row back to the parent directory — a folder, just muted */
-.fm-up { --tc: var(--line2); }
+.fm-up { --tc: var(--mute); border-color: transparent; background: none; }   /* Q2: "../" is a plain line, not a box */
+.fm-up:hover, .fm-up:focus-visible { border-color: transparent; }   /* hover keeps only the wash */
 .fm-up .fm-name { color: var(--dim); }
-.fm-up:hover .fm-name { color: var(--text); }
+.fm-up:hover .fm-name, .fm-up:focus-visible .fm-name { color: var(--text); }
 /* the tags shelf under the tree keeps the same gutter */
-.fm > .rel { margin-top: 8px; padding-left: 24px; padding-right: 24px; }
+.fm > .rel { margin-top: var(--sp-2); padding-left: var(--gut); padding-right: var(--gut); padding-bottom: 0; }
 
 /* tag cloud — grouped by parent category, like `tree -d` output */
-.cloud-groups { display: flex; flex-direction: column; padding: 8px 24px 24px; }
-.cg + .cg { border-top: 1px dashed color-mix(in srgb, var(--line2) 55%, transparent); }
-.cg { padding: 16px 0; }
+.cloud-groups { display: flex; flex-direction: column; padding: var(--sp-2) var(--gut) calc(var(--gut) - var(--sp-4)); }   /* + .cg's 16 = --gut at the bottom edge */
+/* Q2: tag groups are separated by the .cg padding, not by rules */
+.cg { padding: var(--sp-4) 0; }
 .cg-h {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  margin: 0 0 12px;
-  font-size: 11.5px;
-  letter-spacing: 0.05em;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-3);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  letter-spacing: 0;
 }
-.cg-h a { font-weight: 700; color: var(--tc, var(--acc)); }
-/* tick meter — the group's share of tags, matching the categories du bars */
-.cg-h .cg-m { display: flex; gap: 2px; width: 56px; height: 8px; align-self: center; }
-.cg-h .cg-m i { flex: 1; background: var(--line); }
-.cg-h .cg-m i.on { background: var(--tc, var(--acc)); }
-.cg-h a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.cg-h .n { font-size: 11.5px; color: var(--mute); }
+.cg-h a { font-weight: 400; color: var(--tc, var(--acc)); }
+.cg-h a:hover, .cg-h a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.cg-h .n { color: var(--mute); }
 .cloud {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--sp-2);
   align-items: baseline;
-  padding: 12px 16px 16px;
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
 }
 .cg .cloud { padding: 0; }
-.cloud .tagchip[data-s="2"] { font-size: 16px; padding: 4px 12px; }
-.cloud .tagchip[data-s="3"] { font-size: 16px; padding: 4px 16px; }
+/* three tiers — Bold Pixels only steps 16 → 32, so the text stays --px-1 and the
+   BOX grows instead (24 → 28 → 32px tall): how big is this tag, said in padding */
+.cloud .tagchip[data-s="2"] { padding: 3px 12px; }
+/* the busiest tier also earns a whisper of its category's tint — weight
+   spoken in color as well as size, still far under the .chip 12% wash */
+.cloud .tagchip[data-s="3"] {
+  padding: 5px 12px;
+  border-color: color-mix(in srgb, var(--tc, var(--line2)) 45%, var(--line2));
+  background: color-mix(in srgb, var(--tc, var(--line2)) 8%, transparent);
+}
 
 /* related-tags strip on category/tag pages */
 .rel {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px 16px;
-  font-size: 11.5px;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--gut) var(--gut);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
   color: var(--mute);
 }
 
@@ -1266,50 +1681,58 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 }
 .ab > .w-id { grid-area: hero; }
 .ab > .w-side { grid-area: side; }
-/* the id column reaches up into the banner's dead band, so the centered
-   avatar rides high instead of sinking toward the window's middle */
+/* the WHOAMI header hands its bottom padding to the body, so the portrait
+   and intro sit tight under the title instead of floating below a gap */
 .w-id .ph { padding-bottom: 0; }
-.w-id > .win-body { padding-top: 8px; }
-.w-id .mon-lbl { margin: 0 0 8px; }
+.w-id > .win-body { padding-top: 0; }
 /* the side window IS a live shell — it sits on the --term surface (dark
-   glass on the dark palette, bright paper on the light one), amber prompt,
+   glass on the dark palette, bright paper on the light one), red prompt,
    thin scrollback. click inside to type; the frame lights up on focus */
-.w-side:focus-within {
-  border-color: var(--acc);
-  box-shadow: 7px 7px 0 color-mix(in srgb, var(--acc) 22%, rgba(0, 0, 0, 0.3));
-}
 /* descendant, not child — astro-island (display: contents) sits between */
 .w-side .win-body.term {
-  /* a live tty is ALWAYS dark glass, whatever the desktop wears — post
-     code blocks follow the palette, the shell does not. Local overrides
-     keep every child rule (var(--term-*)) on the phosphor set. */
-  --term: #0c1014;
-  --term-txt: #d8d2c2;
-  --term-acc: #ffb454;
-  --term-warn: #ffd23f;
-  --term-link: #6fd0bd;
+  /* the shell follows the palette like every other --term surface: dark
+     glass on the dark desktop, bright paper on the light one — a black
+     slab in a beige workspace read as a hole, not a window */
   flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--term);
+  background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
   color: var(--term-txt);
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   line-height: 1.6;
   cursor: text;
+  padding-block: 0;
+}
+[data-palette="light"] .w-side .win-body.term {
+  /* ink-alpha scanlines on paper, same swap as .md-code-pre / .pv-peek */
+  background-image: repeating-linear-gradient(to bottom, rgba(60, 48, 30, 0.03) 0 1px, transparent 1px 3px);
 }
 /* output + prompt scroll as ONE scrollback; the empty glass sits below
    the prompt, exactly like a freshly-opened shell */
-.term-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.term-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-block: var(--sp-4) var(--gut);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--sp-4));
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--sp-4));
+}
 .tl { white-space: pre-wrap; overflow-wrap: anywhere; }
-.tl .dim, .tl.dim { color: color-mix(in srgb, var(--term-txt) 52%, transparent); }
-.tl .tk, .tl b { color: var(--term-acc); font-weight: 700; }
+.tl .dim, .tl.dim { color: color-mix(in srgb, var(--term-txt) 85%, transparent); }   /* 85%: 58% was too faint to read */
+.tl .tk, .tl b { color: var(--term-acc); font-weight: 800; }
 .tl .warn { color: var(--term-warn); }
 .tl .sig { color: var(--term-acc); letter-spacing: 1px; }
+.tl:has(> .tk:first-child) { padding-left: 10ch; text-indent: -10ch; }
 .tl a { color: var(--term-link); text-decoration: underline; text-underline-offset: 2px; }
-.tl a:hover { color: var(--term-acc); }
+.tl a:hover, .tl a:focus-visible { color: var(--term-acc); }
+/* the PS1 speaks the footer prompt's colors: green identity, teal path —
+   one prompt grammar across the whole desktop */
 .tp { color: color-mix(in srgb, var(--term-txt) 70%, transparent); }
-.tp b { color: var(--term-acc); }
+.tp b { color: var(--green); }
+.tp .tpp { color: var(--term-acc); }
 .term-in { display: flex; align-items: center; }
 .term-in input {
   flex: none;
@@ -1322,74 +1745,86 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   font: inherit;
   caret-color: transparent;          /* the block below IS the cursor */
 }
-/* block cursor — solid + blinking while the shell has focus, dim when not */
+/* block cursor — solid + blinking while the shell has focus, hollow when not */
 .tcur {
   flex: none;
   width: 1ch;
   height: 1.25em;
-  background: var(--term-acc);
-  opacity: 0.35;
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--term-acc);
+  opacity: 1;
 }
-.term:focus-within .tcur { opacity: 1; animation: blink 1.1s steps(1) infinite; }
+.term:focus-within .tcur { background: var(--term-acc); animation: blink 1.1s steps(1) infinite; }
+/* one live cursor: while the shell has focus the other carets hold still */
+body:has(.w-side:focus-within) .caret { animation: none; }
 /* hero — a plain self-introduction: portrait beside a text column
    (name · role · bio · stack), then the CTA prompt below */
 .ab-intro {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 20px clamp(24px, 3.2vw, 48px);
+  gap: var(--sp-5) clamp(24px, 3.2vw, 48px);
 }
 .ab-lede { flex: 1; min-width: min(300px, 100%); }
-.ab-name { font-size: 16px; font-weight: 700; margin: 0 0 2px; }
-.ab-name b { color: var(--acc); }
+.ab-name { font-size: var(--fs-h4); font-weight: 800; margin: 0 0 var(--sp-1); }
+.ab-name b { color: var(--green); }   /* identity is green, everywhere */
 .ab-name .h { color: var(--dim); font-weight: 400; }
 .ab-role {
-  margin: 0 0 16px;
-  padding-bottom: 14px;
-  font-size: 13px;
-  color: var(--mute);
-  border-bottom: 1px dashed color-mix(in srgb, var(--line2) 55%, transparent);
+  margin: 0 0 var(--sp-4);           /* Q2: space separates the zones — no dashed rule under the role */
+  font-size: var(--fs-sm);
+  text-wrap: pretty;
+  color: var(--dim);                 /* body ink stays bold — no faint role line */
 }
-.ab-p { margin: 0 0 12px; font-size: 13px; line-height: 1.8; color: var(--dim); max-width: 68ch; }
+.ab-p { margin: 0 0 var(--sp-3); font-size: var(--fs-base); line-height: 1.7; color: var(--dim); max-width: var(--measure); text-wrap: pretty; }
 .ab-p strong { color: var(--text); }
-/* stack line — a muted label + tag links, closing the intro column */
-.ab-stack { margin: 16px 0 0; font-size: 13px; }
-.ab-stack .k { color: var(--mute); margin-right: 12px; }
-.ab-stack a { display: inline-block; color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
-.ab-stack a + a::before {
+/* stack line — a muted label + the tools, closing the intro column. A tool is
+   a tag link (a) when that tag page exists, plain text (.s) when it does not */
+.ab-stack { margin: var(--sp-4) 0 0; font-size: var(--fs-sm); }
+.ab-stack .k { line-height: 1; font-family: var(--px); font-size: var(--px-1); color: var(--acc); margin-right: var(--sp-3); }   /* Q5: "stack" is a neofetch key */
+.ab-stack a, .ab-stack .s { display: inline-block; }
+.ab-stack .s { color: var(--dim); }
+.ab-stack a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.ab-stack a:hover, .ab-stack a:focus-visible { color: var(--acc); }
+.ab-stack > :not(.k) + :not(.k)::before {
   content: "·";
   display: inline-block;
-  margin: 0 8px;
+  margin: 0 var(--sp-2);
   color: var(--mute);
   text-decoration: none;
 }
 /* CTA prompt sits below the whole intro */
-.ab-cta { margin-top: 20px; }
+.ab-cta { margin-top: var(--sp-5); }
 /* the portrait in a framed avatar slot */
 .ab-ava {
   flex: none;
-  padding: 16px;
-  border: 2px solid var(--line2);
-  background: var(--panel2);
-  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
+  order: 2;                          /* Q1/Q3: text on the left rail, the mascot stands to its right — as on fetch */
+  /* Q7: unboxed, like the fetch mascot — no frame, no fill, no drop-shadow */
+  padding: 0;
+  border: 0;
+  background: none;
+  filter: none;
 }
-[data-palette="light"] .ab-ava { box-shadow: 5px 5px 0 rgba(93, 77, 51, 0.2); }
+@media (min-width: 641px) { .ab-ava { margin-top: var(--sp-2); } }
 /* one column below 1140 — the hero keeps art+text side by side; the shell
    loses its imposed height, so give it a screenful and cap the scrollback */
 @media (max-width: 1140px) {
   .ab { grid-template-columns: 1fr; grid-template-areas: "hero" "side"; }
   .w-side .win-body.term { min-height: 300px; }
+  .w-side .win-body.term { flex: 1 0 auto; }
   .term-scroll { max-height: 50vh; }
 }
 @media (max-width: 640px) {
-  .ab-ava { margin-inline: auto; }   /* wrapped art centers like a boot splash */
+  .ab-intro { flex-wrap: nowrap; align-items: flex-start; }
+  .ab-lede { min-width: 0; }
+  .ab-ava { order: 2; margin: 0; }
+  .ab-ava :is(svg, .av-img) { width: 64px; height: 68px; }   /* 16x17 grid at 4px cells — any other size blurs it */
 }
 
 /* ==================================================================== */
 /*  READER — nvim window                                                 */
 /* ==================================================================== */
 /* outline drawer trigger lives in the statusline — desktop has the
-   sidebar, so hidden until the sidebar goes away at 860px */
+   sidebar, so hidden until the sidebar goes away at 1140px */
 .stl .ol-btn { display: none; }
 .ol-drawer-t {
   flex: 1;
@@ -1397,85 +1832,98 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--dim);
 }
 
-.rd-cols {
+/* two columns of tiles, like a tiled desktop: the nvim window, and beside it a
+   stack of small windows (stat, outline) that stays put while the buffer scrolls */
+.rd-frame {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(240px, 19vw, 336px);
-  align-items: stretch;
-  flex: 1;
+  grid-template-columns: minmax(0, 1fr) 304px;
+  gap: var(--gap);
+  align-items: start;
 }
 .rd-paper {
   position: relative;
   min-width: 0;
-  padding: clamp(24px, 3vw, 48px) clamp(16px, 3vw, 48px) 48px;
-  border-right: 1px solid var(--line);
+  padding: var(--sp-8) var(--sp-8) var(--sp-8);
 }
 /* vim dresses its empty space: ~ marks down the window's left column */
 .rd-paper::before {
   content: "~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~\A~";
   position: absolute;
-  top: clamp(24px, 3vw, 48px);
-  bottom: 24px;
-  left: 16px;
+  top: var(--sp-8);
+  left: var(--gut);
+  max-height: calc(100% - var(--sp-8) - var(--sp-5));
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);   /* the rail fades out instead of stopping dead */
   white-space: pre;
   overflow: hidden;
   font-family: var(--mono);
-  font-size: 13px;
-  line-height: 2.2;
+  font-size: var(--fs-sm);
+  line-height: 28px;                 /* the 28px prose pitch, so the ~ rows stay level with the text lines */
   color: color-mix(in srgb, var(--mute) 40%, transparent);
   pointer-events: none;
   user-select: none;
 }
-/* the buffer: one 90ch column, centered like a maximized editor —
+/* the buffer: one 74ch column, centered like a maximized editor —
    paragraphs, rules, code, banner, pager all share the same right edge.
    16px here sizes the ch unit to match the 16px reader body text */
-.rd-col { position: relative; max-width: 74ch; margin-inline: auto; font-size: 16px; }
-@media (max-width: 1100px) {
-  .rd-paper::before { display: none; }
-}
+/* long-form MONO tops out at ~68ch — --measure (74ch) is calibrated for
+   13px UI text; at 16px mono, 74ch is a 710px line and the eye loses the
+   return sweep. Documented exception, not drift. */
+.rd-col { position: relative; max-width: 68ch; margin-inline: auto; font-size: var(--fs-read); }
 .rd-title {
-  margin: 8px 0 12px;
+  margin: var(--sp-2) 0 var(--sp-3);
   font-family: var(--px);
   font-weight: 400;
   font-size: var(--fs-display);
-  line-height: 1.08;
+  line-height: var(--lh-display);
+  letter-spacing: 0;
+  text-wrap: balance;
   color: var(--text);
   text-shadow: 3px 3px 0 color-mix(in srgb, var(--cv, var(--acc)) 28%, transparent);
 }
-.rd-lede { margin: 0 0 16px; font-size: 16px; line-height: 1.75; color: var(--dim); }
+/* the standfirst outranks the 16px reader body it introduces — one step up (18px), not colour alone */
+.rd-lede { margin: 0 0 var(--sp-4); font-size: var(--fs-standfirst); line-height: 28px; color: var(--dim); text-wrap: pretty; }
 .rd-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  font-size: 11.5px;
+  gap: var(--sp-3);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
   color: var(--mute);
-  margin-bottom: 12px;
+  margin-bottom: var(--sp-3);
 }
-.rd-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.rd-tags { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-5); }
+/* the stat tile beside the buffer already carries category, date, read time
+   and tags — the kicker and the tag row only exist where the side stack is gone */
+@media (min-width: 1141px) {
+  .rd-meta, .rd-tags { display: none; }
+}
 /* the post's hero — a real banner, not a divider: fixed height, big pixel
    word, surface tinted by the category tone */
 .rd-banner {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: var(--sp-1);
   align-items: center;
   height: 128px;
-  padding: 0 12px;
-  margin: 0 0 24px;
+  padding: 0 var(--sp-3);
+  margin: 0 0 var(--sp-5);
   background: color-mix(in srgb, var(--cv, var(--acc)) 8%, var(--panel));
   border: 1px solid color-mix(in srgb, var(--cv, var(--acc)) 35%, var(--line));
   overflow: hidden;
 }
-.rd-banner-d { font-size: 10px; color: color-mix(in srgb, var(--cv, var(--acc)) 60%, transparent); letter-spacing: 0.4em; }
 .rd-banner-w {
   font-family: var(--px);
-  font-size: clamp(24px, 4vw, 40px);
-  letter-spacing: 0.08em;
+  font-size: var(--px-3);            /* 48, or 32 on a phone — see RESPONSIVE */
+  line-height: var(--lh-display);
+  letter-spacing: 0;
   color: var(--cv, var(--acc));
   text-shadow: 3px 3px 0 color-mix(in srgb, var(--cv, var(--acc)) 22%, transparent);
   text-align: center;
@@ -1485,38 +1933,75 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   max-width: 100%;
 }
 
-/* outline (toc) */
-.ol { display: flex; flex-direction: column; min-width: 0; background: var(--panel); }
-.ol-head {
-  padding: 8px 16px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: var(--mute);
-  border-bottom: 1px solid var(--line);
-}
-.ol-list {
+/* the side stack: sticky as a unit, capped to the viewport so a long outline
+   scrolls inside its own tile instead of pushing the stat tile off screen */
+.rd-side {
   position: sticky;
   top: calc(var(--barh) + var(--gap));
   display: flex;
   flex-direction: column;
-  padding: 8px 8px;
+  gap: var(--gap);
+  min-width: 0;
+  max-height: calc(100vh - var(--barh) - var(--gap) - 29px);   /* ends on the statusline's top edge (.stl = 20px line + 8px pad + 1px rule) */
+}
+/* the stat tile: keys in the pixel face, values in the content face */
+.rd-stat-rows {
+  margin: 0;
+  padding: var(--sp-4) var(--gut) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-chrome);
+}
+.rd-stat-rows .r { display: flex; align-items: baseline; gap: var(--sp-3); }
+.rd-stat-rows dt { flex: none; width: 88px; font-family: var(--px); font-size: var(--px-1); font-weight: 400; color: var(--acc); }   /* Q5: keys are red pixel keys, like .nf-rows .k */
+.rd-stat-rows dd { margin: 0; min-width: 0; color: var(--dim); font-variant-numeric: tabular-nums; }
+.rd-stat-rows .chip { margin-block: -2px; }   /* the chip's own padding must not stretch its row past the 24px step */
+.rd-stat-rows .tgs { display: flex; flex-wrap: wrap; gap: 0 var(--sp-3); }
+.rd-stat-rows .tgs a { color: var(--link); font-weight: 400; text-decoration: underline; text-underline-offset: 2px; }
+.rd-stat-rows .tgs a:hover, .rd-stat-rows .tgs a:focus-visible { color: var(--acc); text-decoration: underline; text-underline-offset: 3px; }
+/* outline (toc) — a tile of its own; the list scrolls, the tile never overflows */
+.ol { flex: 0 1 auto; min-height: 0; min-width: 0; }
+.ol-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--sp-2) calc(var(--gut) - 14px);
   gap: 1px;
   overflow-y: auto;
-  max-height: calc(100vh - var(--barh) - 70px);
 }
 .ol-item {
   text-align: left;
-  padding: 4px 12px;
-  font-size: 11.5px;
-  line-height: 1.5;
+  padding: var(--sp-1) var(--sp-3);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  /* no cursor here — buttons already get pointer from the global law;
+     the "no sections" empty state is a span and must NOT invite a click */
   color: var(--mute);
   border-left: 2px solid var(--line);
-  cursor: pointer;
+  text-wrap: balance;
 }
-.ol-item.l3 { padding-left: 24px; }
-.ol-item:hover { color: var(--text); border-left-color: var(--line2); }
-.ol-item.on { color: var(--acc); border-left-color: var(--acc); background: var(--panel2); }
+.ol-item.l3 { padding-left: var(--sp-5); }
+/* a Part that owns subsections wears the tree marker, and it flips the moment
+   the reader is inside that section — same ▸/▾ grammar as the file manager */
+.ol-item.has-kids { position: relative; padding-right: calc(var(--sp-3) + 12px); }
+.ol-item.has-kids::after {
+  content: "▸";
+  position: absolute;                /* one marker column on the right; it stays on line 1 of a wrapped title */
+  right: var(--sp-2);
+  top: var(--sp-1);
+  line-height: var(--lh-chrome);
+  margin-left: 0;
+  font-family: var(--mono);          /* ▸ ▾ are not in Bold Pixels */
+  font-size: var(--fs-micro);
+  color: var(--mute);
+}
+.ol-item.has-kids[aria-expanded="true"]::after { content: "▾"; color: var(--acc); }
+button.ol-item:hover, button.ol-item:focus-visible { color: var(--acc); border-left-color: var(--acc); }
+.ol-item.on { color: var(--acc); border-left-color: var(--acc); background: color-mix(in srgb, var(--acc) 10%, var(--panel2)); }
 
 /* vim statusline — pinned to the viewport bottom while the buffer is
    open, exactly like the real thing */
@@ -1527,7 +2012,9 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   display: flex;
   align-items: center;
   gap: 0;
-  font-size: 11.5px;
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
   background: var(--panel);
   border-top: 1px solid var(--line);
   overflow: hidden;
@@ -1535,11 +2022,9 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 }
 .stl-mode {
   flex: none;
-  padding: 4px 12px;
+  padding: var(--sp-1) var(--sp-3);
   background: var(--acc);
   color: var(--ink);
-  font-weight: 700;
-  letter-spacing: 0.08em;
 }
 /* the filename doubles as the yank-permalink button (vim: yy the path) */
 .stl-file {
@@ -1547,45 +2032,99 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 4px 12px;
+  padding: var(--sp-1) var(--sp-3);
   color: var(--dim);
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
 }
-.stl-file:hover { color: var(--acc); }
+.stl-file:hover, .stl-file:focus-visible { color: var(--acc); }
+.stl-file.is-yanked { color: var(--green); }
+/* .stl clips (overflow: hidden) — an offset ring would be sheared off, so
+   the statusline's buttons wear theirs on the inside */
+.stl-file:focus-visible, .stl .ol-btn:focus-visible { outline-offset: -2px; }
 .stl-keys {
   flex: none;
-  padding: 4px 12px;
-  font-size: 11.5px;
+  padding: var(--sp-1) var(--sp-3);
   color: var(--mute);
   border-left: 1px solid var(--line);
 }
 .stl-pct {
   flex: none;
-  padding: 4px 12px;
+  min-width: 56px;                      /* "Top" / "4%" / "12%" / "Bot" share one width, so the keys segment holds still */
+  text-align: center;
+  padding: var(--sp-1) var(--sp-3);
   color: var(--ink);
   background: var(--acc2);
-  font-weight: 700;
+  border: 0;                            /* it's a button now — gg jumps to top */
+  font: inherit;
+  font-variant-numeric: tabular-nums;   /* the % ticks on scroll — no jitter */
+  cursor: pointer;
 }
-.prg {
-  flex: none;
-  display: flex;
-  gap: 2px;
-  align-items: center;
-  padding: 0 12px;
-}
-.prg i { width: 7px; height: 9px; background: var(--line); }
-.prg i.on { background: var(--acc); }
+.stl-pct:hover, .stl-pct:focus-visible { background: var(--acc); }
+.stl-pct:focus-visible { outline-offset: -2px; }
 
-/* pager — two vim ex-commands, styled like every other CTA on the site;
-   :next is primary because it continues the reading direction */
+/* see-also — the current category's newest siblings (chirpy's related
+   posts, spoken in ls): date · title · read time, one row per post */
+.rd-rel { margin-top: var(--sp-8); padding-top: 0; border-top: 0; }
+.rd-rel-h {
+  margin-bottom: var(--sp-2);
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--tc, var(--acc));
+}
+.rd-rel-h span { font-weight: 400; letter-spacing: normal; color: var(--mute); }
+.rd-rel-r {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: 6px 0;                                   /* tap-target row: literal on purpose */
+  font-size: var(--fs-sm);
+}
+.rd-rel-r time { flex: none; font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); color: var(--mute); font-variant-numeric: tabular-nums; }
+.rd-rel-r .t { flex: 1; min-width: 0; color: var(--dim); }
+.rd-rel-r .r { flex: none; font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); color: var(--mute); }
+.rd-rel-r:hover .t, .rd-rel-r:focus-visible .t { color: var(--acc); text-decoration: underline; text-underline-offset: 2px; }
+.rd-rel-r:hover time, .rd-rel-r:hover .r, .rd-rel-r:focus-visible time, .rd-rel-r:focus-visible .r { color: var(--acc); }
+
+/* pager — two vim ex-commands that now carry their destination's title;
+   :next is the accent card because it continues the reading direction */
 .rd-pager {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 24px;
+  gap: var(--sp-3);
+  margin-top: var(--sp-8);
 }
+.rd-rel + .rd-pager { margin-top: var(--sp-5); }
+.rd-pager > span { flex: 1 1 0; }      /* missing neighbour still holds half */
+.rd-pgr {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;                                         /* control metric: literal */
+  padding: var(--sp-2) var(--sp-3);                 /* the row metric — see CONTROL LAW */
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.rd-pgr.next { align-items: flex-end; text-align: right; }
+.rd-pgr .c { font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); font-weight: 400; letter-spacing: 0; color: var(--mute); }
+.rd-pgr.next .c { color: var(--acc); }
+.rd-pgr .t {
+  max-width: 100%;
+  font-size: var(--fs-sm);
+  color: var(--dim);
+  overflow: hidden;
+  display: -webkit-box;                 /* two lines, then an ellipsis: the destination stays readable */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.rd-pgr:hover, .rd-pgr:focus-visible { border-color: var(--acc); }
+.rd-pgr:hover .c, .rd-pgr:hover .t,
+.rd-pgr:focus-visible .c, .rd-pgr:focus-visible .t { color: var(--acc); }
 
 /* vim hlsearch flash on outline jumps — the tint lives on an overlay so
    the animation is opacity-only (composite, no repaint) */
@@ -1607,106 +2146,139 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 /* ==================================================================== */
 /*  MARKDOWN BODY                                                        */
 /* ==================================================================== */
-.md { font-size: 14px; line-height: 1.85; color: var(--text); }
-.rd-body .md { font-size: 16px; }    /* reader gets a roomier measure */
-/* justified prose — mono can only stretch inter-word spaces, so auto
-   hyphenation does the real work of landing every line near the same
-   right edge (never perfectly flat, deliberately close) */
+.md { font-size: var(--fs-base); line-height: 1.75; color: var(--text); }
+/* a markdown "# Title" opening the post repeats .rd-title right above it */
+.rd-body .md > .md-h1:first-child { display: none; }
+.rd-body .md { font-size: var(--fs-read); }    /* reader gets a roomier measure */
+/* prose runs ragged-right. Justification was the old intent, but mono has
+   no glyph widths to negotiate with — it can only stretch word spaces, so
+   every line paid in rivers, and on a ~38ch phone measure it tore open.
+   text-wrap: pretty keeps the rag tidy; no hyphens, no gaps. */
 .rd-body .md-p,
 .rd-body .md-ul li,
 .rd-body .md-ol li,
 .rd-body .md-quote p {
-  text-align: justify;
-  -webkit-hyphens: auto;
-  hyphens: auto;
+  text-align: start;
   text-wrap: pretty;
 }
-.md-p { margin: 0 0 16px; }
+.md-p { margin: 0 0 var(--sp-4); }
+/* the space ABOVE a heading is half its rank — a flat 40px everywhere made
+   h3 and h4 shout as loudly as the h2 they belong to */
 .md-h {
   position: relative;
-  margin: 40px 0 16px;
+  margin: var(--sp-6) 0 var(--sp-3);
   font-family: var(--px);
   font-weight: 400;
   line-height: 1.15;
+  letter-spacing: 0;
+  text-wrap: balance;
   color: var(--text);
-  scroll-margin-top: calc(var(--barh) + 16px);
+  scroll-margin-top: calc(var(--barh) + var(--sp-4));
 }
-.md-h2 { font-size: 24px; padding-bottom: 8px; border-bottom: 1px solid var(--line2); }
-.md-h2::before { content: "## "; color: var(--acc); font-family: var(--mono); font-size: 0.7em; }
-.md-h3 { font-size: 21px; }
-.md-h3::before { content: "### "; color: var(--acc2); font-family: var(--mono); font-size: 0.7em; }
-.md-h4 { font-size: 16px; font-family: var(--mono); font-weight: 700; }
-.md-anchor {
-  position: absolute;
-  left: -20px;
+/* a new h2 is a new SECTION — it earns more air above than an h3/h4 does,
+   and the hairline under it makes the break legible before a word is read */
+.md-h1, .md-h2 { margin-top: var(--sp-8); margin-bottom: var(--sp-5); font-size: var(--px-2); line-height: 36px; padding-bottom: 0; border-bottom: 0; }   /* 48 above / 24 below: a section opens with room */
+/* h3 and h4 step down into the content face: Bold Pixels only has 16 or 32, and a
+   16px pixel h3 would sit visibly smaller than the 16px body it introduces */
+.md-h3 { margin-bottom: var(--sp-4); font-size: var(--fs-h3); font-family: var(--mono); font-weight: 800; line-height: 28px; }   /* 32 above / 16 below */
+.md-h4 { margin-top: var(--sp-5); font-size: 18px; font-family: var(--mono); font-weight: 800; line-height: 24px; }   /* 18, not the 16px body: with no #### marker, size is what tells an h4 from a **bold** lead-in (ladder 32/20/18/16) */
+/* a heading that directly follows another heading (h2 then h3) must not
+   stack two full section-gaps — pull the second one tight to its parent */
+.md-h2 + .md-h3, .md-h3 + .md-h4 { margin-top: var(--sp-3); }
+/* only the SECTION heading wears the nvim marker (## , dimmed); sub-levels
+   are told by size and weight (32/20/18/16), not by ever-longer hash runs. Inline by
+   default; once the column has a gutter it hangs into it so the heading text
+   stays on the paragraphs' edge. The second `content` marks it decorative. */
+.rd-body .md-h2::before {
   color: var(--mute);
-  font-family: var(--mono);
-  font-size: 0.75em;
-  opacity: 0.35;                     /* always faintly there — touch has no hover */
+  font-weight: 400;
+  content: "## ";
+  content: "## " / "";
 }
-.md-h:hover .md-anchor, .md-anchor:focus-visible { opacity: 1; }
-.md-link { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
-.md-link:hover { background: var(--acc); color: var(--ink); }
+@media (min-width: 1360px) {   /* below 1360 a hanging sigil would run into the ~ rail */
+  .rd-body .md-h2::before {
+    position: absolute;
+    right: 100%;
+    margin-right: var(--sp-2);
+    white-space: pre;
+  }
+}
+/* links speak the accent: red + bold marks "this is clickable" on its own, so
+   the rule only appears on hover. Bold text stays ink — red is for links only */
+.md-link {
+  color: var(--acc);
+  font-weight: 700;
+  text-decoration: none;
+}
+.md-link:hover, .md-link:focus-visible { background: none; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.md-link .md-ic { color: inherit; }
 .md-ic {
-  font-size: 0.88em;
-  padding: 1px 8px;
-  background: var(--panel2);
-  border: 1px solid var(--line2);
-  color: var(--yellow);
+  font-size: 0.875em;                /* 14px in the 16px body: a quiet token, not a second voice */
+  padding: 0.05em 0.35em;            /* the ground hugs the glyphs: ~1px above/below, 5px each side */
+  border-radius: 4px;                /* softened chip: the square one read as a raw block */
+  background: color-mix(in srgb, var(--text) 7%, var(--panel));   /* neutral ground, no frame */
+  border: 0;
+  color: var(--ic);                  /* the fn hue — never the warning yellow */
+  overflow-wrap: break-word;         /* a long path wraps instead of bursting out of the window; break-word (not anywhere) so table columns keep names whole */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;       /* a wrapped chip keeps its padding and ground on both fragments */
 }
-.md-ul, .md-ol { margin: 0 0 16px; padding-left: 24px; }
-.md-ul li, .md-ol li { margin-bottom: 8px; }
+.md-callout .md-ic { background: color-mix(in srgb, var(--text) 8%, var(--panel2)); }   /* one notch darker on the callout's panel2 ground */
+.md-ul, .md-ol { margin: var(--sp-5) 0; padding-left: 3ch; }   /* a list is a block: 24 above and below */
+.md-ol li::marker { color: var(--acc); }
+.md-ul li, .md-ol li { margin-bottom: var(--sp-2); }
 .md-ul { list-style: none; }
 .md-ul li { position: relative; }
+/* the marker hangs in a 3ch (three mono cells) gutter: the bullet, the ol
+   numeral and the task box all start flush on the column edge, text on cell 3 */
 .md-ul li::before {
   content: "▪";
   position: absolute;
-  left: -18px;
+  left: -3ch;
   color: var(--acc);
 }
 .md-quote {
   position: relative;
-  margin: 0 0 16px;
-  padding: 12px 16px 12px 32px;
+  margin: var(--sp-5) 0;             /* 24 above and below */
+  padding: 0 0 0 var(--sp-5);
+  /* a quote is an ASIDE: it steps down to the UI base size (14px, the owner's
+     call) under the reader's 16px prose, and is set apart by one thick accent
+     rail and the dim ink. No box, no glyph: the rail alone is the anchor */
   color: var(--dim);
-  font-style: italic;
-  background: var(--panel2);
-  border-left: 3px solid var(--acc);
+  font-size: var(--fs-base);         /* 14px — the owner's explicit call */
+  font-style: normal;                /* upright keeps *em* inside visible */
+  line-height: 24px;
+  border-left: 4px solid var(--acc);
 }
-.md-quote::before {                  /* quoted terminal input */
-  content: ">";
-  position: absolute;
-  left: 12px; top: 10px;
-  font-family: var(--px);
-  font-size: 16px;
-  font-style: normal;
-  line-height: 1.6;
-  color: var(--acc);
-}
+.md-quote em { font-style: italic; }
 .md-quote p { margin: 0; }
-.md-quote p + p { margin-top: 12px; }
+.md-quote p + p { margin-top: var(--sp-3); }
 .md-quote-cite {
-  margin-top: 8px;
+  margin-top: var(--sp-2);
   font-style: normal;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   text-align: right;
   color: var(--mute);
 }
 .md-quote-cite::before { content: "── "; color: var(--acc2); }
-.md-hr { margin: 24px 0; border: none; border-top: 1px dashed var(--line2); }
+.md-hr { margin: var(--sp-5) 0; border: none; border-top: 1px dashed var(--line2); }
+/* one block rhythm: framed blocks (code, table, callout, diagram, image) sit
+   at 32/32 after prose; quotes and lists carry their own 24/24 */
+:is(.md-p, .md-ul, .md-ol, .md-quote) + :is(.md-code, .md-table, .md-callout, .md-diagram, .md-img) { margin-top: var(--sp-6); }
+.rd-body :is(.md-code, .md-table, .md-callout, .md-diagram, .md-img) { margin-bottom: var(--sp-6); }
 
 /* task list — pixel checkboxes replace the ▪ bullet */
 .md-ul li.md-task::before { content: none; }
 .md-task-box {
   position: absolute;
-  left: -24px;
-  top: 5px;
+  left: calc(-3 * 0.6 * var(--fs-read));   /* 3 reader cells: ch here would be this 10px box's own, not the list's */
+  top: 7px;
   width: 13px; height: 13px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--fs-micro);
+  font-weight: 800;
   line-height: 1;
   color: transparent;
   background: var(--panel2);
@@ -1717,28 +2289,29 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 
 /* table — box-drawing grid on the terminal glass */
 .md-table {
-  margin: 0 0 24px;
+  margin: 0 0 var(--sp-5);
   background: var(--term);
   border: 1px solid var(--line2);
-  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
   overflow-x: auto;
 }
 .md-table table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   line-height: 1.6;
   color: var(--term-txt);
 }
 .md-table th, .md-table td {
-  padding: 8px 12px;
+  padding: var(--sp-2) var(--sp-3);
   border: 1px solid color-mix(in srgb, var(--term-txt) 14%, transparent);
+  border-width: 0 0 1px;             /* horizontal rules only — no cell grid */
   text-align: left;
   vertical-align: top;
 }
+.md-table tbody tr:last-child td { border-bottom: 0; }
 .md-table th {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--term-acc);
   background: color-mix(in srgb, var(--term-txt) 5%, transparent);
   border-bottom-color: color-mix(in srgb, var(--term-txt) 30%, transparent);
@@ -1750,26 +2323,26 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 
 /* code block — a terminal window of this desktop */
 .md-code {
-  margin: 0 0 24px;
+  margin: 0 0 var(--sp-5);
   background: var(--term);
   border: 1px solid var(--line2);
-  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);   /* sub-window rank: .win is 7px */
 }
 .md-code-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 4px 8px 4px 12px;
+  gap: var(--sp-3);
+  min-height: 28px;                   /* one height for every sub-window bar */
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
   background: var(--panel2);
   border-bottom: 1px solid var(--line);
   color: var(--dim);
 }
-.md-code-bar::before {              /* app dot — mirrors .win-tbar::before */
+.md-code-bar::before {              /* app dot */
   content: "";
   flex: none;
-  width: 8px; height: 8px;
+  width: 9px; height: 9px;
   background: var(--acc);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--acc) 65%, transparent);
+  box-shadow: none;
 }
 .md-code-path {
   flex: 1;
@@ -1777,25 +2350,25 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   color: var(--mute);
 }
-.md-code-path b { color: var(--green); font-weight: 700; }
+.md-code-path b { color: var(--green); font-weight: 800; }
 .md-code-path i { font-style: normal; color: var(--dim); }
-.md-code-tools { display: flex; gap: 4px; }
+.md-code-tools { display: flex; gap: var(--sp-1); }
 .md-code-btn {
-  width: 24px; height: 20px;
+  width: 22px; height: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--mute);
   border: 1px solid var(--line2);
 }
-.md-code-btn:hover { color: var(--text); border-color: var(--acc); }
-.md-code-btn.is-on { color: var(--acc); border-color: var(--acc); }
+.md-code-btn:hover:not(:disabled), .md-code-btn:focus-visible:not(:disabled) { color: var(--acc); border-color: var(--acc); }
+.md-code-btn.is-on { color: var(--acc); border-color: var(--acc); background: color-mix(in srgb, var(--acc) 10%, transparent); }
 .md-code-copy.is-copied {
   width: auto;
-  padding: 0 8px;
+  padding: 0 6px;
   color: var(--green);
   border-color: var(--green);
   animation: yank-pop 0.12s steps(2, end);
@@ -1804,32 +2377,33 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   from { transform: translate(1px, 1px); }
   to   { transform: none; }
 }
-.md-code-yank { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; line-height: 1; }
+.md-code-yank { font-size: var(--fs-meta); font-weight: 500; letter-spacing: 0.04em; white-space: nowrap; line-height: 1; }
 .md-code-ico { display: block; }
 .md-code-pre {
   margin: 0;
-  padding: 12px 0;
+  padding: var(--sp-3) 0;
   color: var(--term-txt);
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   line-height: 1.7;
   overflow-x: auto;
   /* CRT glass: faint scanlines + a whisper of bloom near the bezel;
-     white-alpha is fine — this surface stays dark in both palettes */
+     white-alpha reads on the dark glass only — the light palette swaps
+     in ink-alpha (see the light block), or the texture vanishes on paper */
   background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
-  box-shadow: inset 0 14px 30px -24px color-mix(in srgb, var(--term-acc) 35%, transparent);
+  box-shadow: none;
 }
-.md-code-line { display: flex; min-width: max-content; padding: 0 12px; }
+.md-code-line { display: flex; min-width: max-content; padding: 0 var(--sp-3); }
 .md-code-line:hover { background: color-mix(in srgb, var(--term-txt) 5%, transparent); }
 .md-code-line:hover .md-code-ln { color: var(--term-acc); }
 .md-code-ln {                        /* real gutter: right-aligned, hairline rule */
   flex: none;
   width: calc(var(--gw, 2ch) + 4px);
   text-align: right;
-  padding-right: 12px;
-  margin-right: 12px;
+  padding-right: var(--sp-3);
+  margin-right: var(--sp-3);
   border-right: 1px solid color-mix(in srgb, var(--term-txt) 10%, transparent);
-  color: color-mix(in srgb, var(--term-txt) 30%, transparent);
+  color: color-mix(in srgb, var(--term-txt) var(--gutter-ink), transparent);
   user-select: none;
 }
 .md-code-txt { white-space: pre; }
@@ -1849,37 +2423,41 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .md-code-more {
   display: block;
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 12px;
   font-family: var(--mono);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  letter-spacing: 0.04em;
   text-align: center;
-  color: color-mix(in srgb, var(--term-txt) 55%, transparent);
+  color: color-mix(in srgb, var(--term-txt) 72%, transparent);
   background: var(--term);
   border: none;
   border-top: 1px dashed color-mix(in srgb, var(--term-txt) 18%, transparent);
   cursor: pointer;
 }
-.md-code-more:hover { color: var(--term-acc); }
-/* phosphor ladder — one hue, many intensities, tuned per surface:
-   pale creams on the dark glass, dark inks on the light paper */
+.md-code-more:hover, .md-code-more:focus-visible { color: var(--term-acc); }
+/* syntax ladder — TONAL, not a rainbow. Identifiers and function names stay
+   plain ink; only three roles carry colour: teal keyword (= --term-acc),
+   slate type, rust literal (string and number SHARE it — both are literals,
+   and two near-identical hues only made the block look noisy). Two hue
+   families total, both native to this palette, so the block reads as one
+   object instead of a spectrum. */
 .md-code, .md-diagram {
   --tk-kw:  var(--term-acc);
-  --tk-fn:  #f5e6c8;
-  --tk-ty:  #e8c07a;
-  --tk-str: #c9a35e;
-  --tk-num: #ff8f40;
-  --tk-cmt: #6b7683;
+  --tk-fn:  var(--term-txt);
+  --tk-ty:  #a3bbd2;
+  --tk-str: #dd9a80;
+  --tk-num: #dd9a80;
+  --tk-cmt: #9a978f;               /* 5.2:1 — a comment must stay readable */
 }
 [data-palette="light"] .md-code, [data-palette="light"] .md-diagram {
-  --tk-fn:  #54431d;
-  --tk-ty:  #8a5a00;
-  --tk-str: #6d5416;
-  --tk-num: #b34700;
-  --tk-cmt: #8d8266;
+  /* --tk-kw and --tk-fn follow --term-acc / --term-txt, which already flip */
+  --tk-ty:  #34495e;
+  --tk-str: #6d3c2f;
+  --tk-num: #6d3c2f;
+  --tk-cmt: #6b6459;               /* 5.6:1 on the ivory glass */
 }
-.t-kw  { color: var(--tk-kw); font-weight: 700; }
+.t-kw  { color: var(--tk-kw); font-weight: 800; }
 .t-fn  { color: var(--tk-fn); }
 .t-ty  { color: var(--tk-ty); }
 .t-str { color: var(--tk-str); }
@@ -1888,23 +2466,24 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 
 /* ascii + mermaid diagrams */
 .md-diagram {
-  margin: 0 0 24px;
+  margin: 0 0 var(--sp-5);
   background: var(--term);
   border: 1px solid var(--line2);
-  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
 }
 .md-diagram-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px 4px 12px;
+  gap: var(--sp-2);
+  min-height: 28px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
   background: var(--panel2);
   border-bottom: 1px solid var(--line);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--acc);
+  font-size: var(--fs-meta);
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--dim);
 }
+.md-diagram-glyph { color: var(--acc); }
 .md-diagram-bar .md-diagram-t {
   flex: 1;
   min-width: 0;
@@ -1914,10 +2493,10 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 }
 .md-diagram-art {
   margin: 0;
-  padding: 16px 16px;
+  padding: var(--sp-4);
   color: var(--term-acc);
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   line-height: 1.5;
   overflow-x: auto;
   text-shadow: 0 0 8px color-mix(in srgb, var(--term-acc) 35%, transparent);  /* phosphor bloom */
@@ -1925,17 +2504,17 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 .md-diagram-art code { display: block; width: max-content; margin-inline: auto; }
 .md-diagram-status {
   display: flex;
-  gap: 12px;
-  padding: 4px 12px;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-3);
   background: var(--panel2);
   border-top: 1px solid var(--line);
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   color: var(--mute);
   font-variant-numeric: tabular-nums;
 }
 .md-diagram-status .grow { flex: 1; min-width: 0; }
 /* mermaid — scale-to-fit; the svg keeps only its viewBox */
-.md-mermaid { padding: 12px; margin-inline: auto; }
+.md-mermaid { padding: var(--sp-3); margin-inline: auto; }
 .md-mermaid svg {
   display: block;
   width: 100%;
@@ -1943,26 +2522,28 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   max-height: min(520px, 68vh);
   margin-inline: auto;
 }
+.md-mermaid svg rect { rx: 0 !important; ry: 0 !important; }
+.md-mermaid svg marker path { fill: color-mix(in srgb, var(--term-acc) 60%, var(--term)); stroke: none; }
 .md-mermaid-load {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-2);
   min-height: 96px;                  /* reserve space — the swap nudges, not shoves */
-  padding: 16px 16px;
+  padding: var(--sp-4);
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--term-txt) 55%, transparent);
+  color: color-mix(in srgb, var(--term-txt) 72%, transparent);
 }
-.md-mermaid-load b { color: var(--term-acc); font-weight: 700; }
+.md-mermaid-load b { color: var(--term-acc); font-weight: 800; }
 /* mermaid error — honest stderr: warn bar, one-line error, source dump */
 .md-diagram.is-err { border-color: color-mix(in srgb, var(--yellow) 50%, var(--line2)); }
-.md-diagram.is-err .md-diagram-bar { color: var(--yellow); }
-.md-diagram-flag { flex: none; font-size: 10px; font-weight: 400; letter-spacing: 0.06em; color: var(--mute); }
+.md-diagram.is-err .md-diagram-bar, .md-diagram.is-err .md-diagram-glyph { color: var(--yellow); }
+.md-diagram-flag { flex: none; font-size: var(--fs-micro); font-weight: 400; letter-spacing: 0.06em; color: var(--mute); }
 .md-diagram-err {
   margin: 0;
-  padding: 8px 16px;
-  font-size: 11.5px;
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-meta);
   line-height: 1.6;
   color: var(--term-warn);
   background: color-mix(in srgb, var(--term-warn) 7%, var(--term));
@@ -1970,7 +2551,7 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   overflow-wrap: anywhere;
 }
 /* fullscreen zoom — a focused window floating over the desktop */
-.md-diagram-max { flex: none; font-size: 13px; }
+.md-diagram-max { flex: none; font-size: var(--fs-sm); }
 .md-diagram-max:disabled { opacity: 0.4; cursor: default; }
 .md-diagram-zoom {
   padding: 0;
@@ -1979,44 +2560,46 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   background: var(--term);
   color: var(--term-txt);
   border: 2px solid var(--acc);
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: 8px 8px 0 rgba(var(--sh), 0.35);
 }
-.md-diagram-zoom[open] { animation: rofi-in 0.1s steps(2, end) both; }
-.md-diagram-zoom::backdrop { background: rgba(6, 9, 12, 0.72); }
+.md-diagram-zoom[open] { animation: rofi-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.md-diagram-zoom[open]::backdrop { animation: win-in 0.2s ease-out both; }
+.md-diagram-zoom::backdrop { background: color-mix(in srgb, var(--bg2) 72%, transparent); }
 .md-diagram-zoom-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--sp-2);
+  min-height: 34px;                  /* window rank — and what -body subtracts */
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
   background: var(--panel2);
   border-bottom: 1px solid var(--line);
-  font-size: 11.5px;
-  font-weight: 700;
+  font-size: var(--fs-meta);
+  font-weight: 800;
   letter-spacing: 0.06em;
   color: var(--acc);
 }
 .md-diagram-zoom-bar .md-diagram-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.md-diagram-zoom-hint { flex: none; font-weight: 400; font-size: 10px; letter-spacing: 0.04em; color: var(--mute); }
-.md-diagram-zoom-body { padding: 16px; overflow: auto; max-height: calc(90vh - 34px); }
+.md-diagram-zoom-hint { flex: none; font-weight: 400; font-size: var(--fs-micro); letter-spacing: 0.04em; color: var(--mute); }
+.md-diagram-zoom-body { padding: var(--sp-4); overflow: auto; max-height: calc(90vh - 34px); }
 .md-diagram-zoom-body svg { display: block; width: 100%; height: auto; max-height: none; margin-inline: auto; }
 
 /* image viewer — a feh window; body rides the --term surface */
 .md-img {
-  margin: 0 0 24px;
+  margin: 0 0 var(--sp-5);
   background: var(--term);
   border: 1px solid var(--line2);
-  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
 }
 .md-img-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
+  gap: var(--sp-2);
+  min-height: 28px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
   background: var(--panel2);
   border-bottom: 1px solid var(--line);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: var(--fs-meta);
+  font-weight: 800;
+  letter-spacing: 0;
   color: var(--dim);
 }
 .md-img-glyph { display: inline-flex; color: var(--acc); }
@@ -2026,23 +2609,24 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: 0;
   color: var(--green);
 }
-.md-img-app { font-weight: 400; font-size: 10px; letter-spacing: 0.12em; color: var(--mute); }
+.md-img-app { font-weight: 400; font-size: var(--fs-micro); letter-spacing: 0.12em; color: var(--mute); }
 .md-img-open {
-  width: 24px; height: 20px;
+  width: 22px; height: 18px;          /* the 22×18 chrome square again */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   color: var(--mute);
   border: 1px solid var(--line2);
 }
-.md-img-open:hover { color: var(--acc); border-color: var(--acc); }
+.md-img-open:hover, .md-img-open:focus-visible { color: var(--acc); border-color: var(--acc); }
 .md-img-pic {
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: var(--sp-4);
   background:
     linear-gradient(45deg, color-mix(in srgb, var(--term-txt) 5%, transparent) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--term-txt) 5%, transparent) 75%),
     linear-gradient(45deg, color-mix(in srgb, var(--term-txt) 5%, transparent) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--term-txt) 5%, transparent) 75%);
@@ -2055,50 +2639,48 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   max-width: 100%;
   height: auto;
   border: 1px solid var(--line);
-  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.35);
 }
 .md-img-drop {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  margin: 16px 0;
-  padding: 16px 32px;
+  gap: var(--sp-1);
+  margin: var(--sp-4) 0;
+  padding: var(--sp-4) var(--sp-6);
   border: 1px dashed color-mix(in srgb, var(--term-txt) 35%, transparent);
 }
-.md-img-key { font-family: var(--px); font-size: 14px; letter-spacing: 0.06em; color: var(--term-acc); }
-.md-img-hint { font-size: 10px; letter-spacing: 0.08em; color: color-mix(in srgb, var(--term-txt) 55%, transparent); }
+.md-img-key { font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); letter-spacing: 0; color: var(--term-acc); }
+.md-img-hint { font-size: var(--fs-micro); letter-spacing: 0.08em; color: color-mix(in srgb, var(--term-txt) 72%, transparent); }
 .md-img-status {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  padding: 4px 12px;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-3);
   background: var(--panel2);
   border-top: 1px solid var(--line);
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   color: var(--mute);
 }
 .md-img-cap { flex: 1; min-width: 0; color: var(--dim); }
 .md-img-dims { font-variant-numeric: tabular-nums; }
 
-/* callouts — syslog lines: glyph badge + kind label, amber-ramp tones */
+/* callouts — syslog lines: glyph badge + kind label, red-ramp tones */
 .md-callout {
   --tone: var(--dim);                /* note/info + unknown tones */
-  margin: 0 0 24px;
+  margin: 0 0 var(--sp-5);
+  padding: var(--sp-5);
   background: var(--panel2);
-  border: 1px solid var(--line2);
-  border-left: 3px solid var(--tone);
-  font-size: 13px;                   /* matches the code-block glass */
+  border: 0;
+  border-left: 8px solid var(--tone); /* one thick tone rail on a tint: an aside card */
+  font-size: var(--fs-base);
 }
-.md-callout-tip, .md-callout-success { --tone: var(--acc); }
+.md-callout-tip, .md-callout-success { --tone: var(--term-acc); }
 .md-callout-warn, .md-callout-warning, .md-callout-danger { --tone: var(--acc2); }
 .md-callout-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 26px;
-  padding: 4px 12px;
-  border-bottom: 1px dashed color-mix(in srgb, var(--tone) 45%, var(--line));
+  gap: var(--sp-2);
+  padding: 0;
 }
 .md-callout-ico {
   flex: none;
@@ -2106,45 +2688,29 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--fs-micro);
+  font-weight: 800;
   line-height: 1;
   color: var(--tone);
   border: 1px solid color-mix(in srgb, var(--tone) 70%, transparent);
   background: color-mix(in srgb, var(--tone) 12%, transparent);
 }
-.md-callout-kind { flex: none; font-family: var(--px); font-size: 11.5px; letter-spacing: 0.08em; color: var(--tone); }
+.md-callout-kind { flex: none; font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); letter-spacing: 0.1em; text-transform: uppercase; color: var(--tone); }
+.md-callout-ico { display: none; }   /* the rail + kicker carry the kind; an icon box was a third marker */
 .md-callout-title {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--text);
+  font-size: var(--fs-meta);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;         /* the kicker line: kind · title, tracked caps */
+  color: var(--tone);
 }
 .md-callout-title::before { content: "· "; color: var(--mute); font-weight: 400; }
-.md-callout-body { padding: 12px 16px 12px; line-height: 1.75; }
+.md-callout-body { padding: var(--sp-3) 0 0; line-height: 1.75; }
 /* CRIT: the one inverted bar in the reading column */
-.md-callout-danger .md-callout-head { background: var(--acc2); border-bottom: 1px solid var(--acc2); }
-.md-callout-danger .md-callout-ico {
-  color: var(--ink);
-  border-color: color-mix(in srgb, var(--ink) 60%, transparent);
-  background: transparent;
-  animation: blink 1.1s steps(1) infinite;
-}
-.md-callout-danger .md-callout-kind, .md-callout-danger .md-callout-title { color: var(--ink); }
-.md-callout-danger .md-callout-title::before { color: color-mix(in srgb, var(--ink) 65%, transparent); }
-
-/* light palette: the dark glass must read as an object ON the paper —
-   ink-mixed border + warm shadow instead of the dark-tuned defaults */
-[data-palette="light"] .md-code, [data-palette="latte"] .md-code,
-[data-palette="light"] .md-diagram, [data-palette="latte"] .md-diagram,
-[data-palette="light"] .md-img, [data-palette="latte"] .md-img,
-[data-palette="light"] .md-table, [data-palette="latte"] .md-table {
-  border-color: color-mix(in srgb, var(--text) 40%, var(--line2));
-  box-shadow: 5px 5px 0 rgba(60, 48, 30, 0.3);
-}
 
 /* light palette, everywhere else: the dark-tuned pitch-black shadows read
    as smudges on paper — every shadow warms to ink instead */
@@ -2154,41 +2720,38 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
 [data-palette="light"] .rd-title {
   text-shadow: 3px 3px 0 color-mix(in srgb, var(--cv, var(--acc)) 14%, transparent);
 }
-[data-palette="light"] .win { box-shadow: 7px 7px 0 rgba(93, 77, 51, 0.18); }
-[data-palette="light"] .win.focus, [data-palette="light"] .win.focus:hover {
-  box-shadow: 7px 7px 0 color-mix(in srgb, var(--acc) 22%, rgba(93, 77, 51, 0.2));
-}
-[data-palette="light"] .bar { box-shadow: 0 3px 0 rgba(93, 77, 51, 0.14); }
-[data-palette="light"] .bar-menu { box-shadow: 2px 2px 0 rgba(93, 77, 51, 0.25); }
-[data-palette="light"] .ws-btn.on { box-shadow: 2px 2px 0 rgba(93, 77, 51, 0.2); }
+/* the 48px voice word smears at full 22% on paper — lighter drop there */
+[data-palette="light"] .ph-title .nowrap { text-shadow: 3px 3px 0 color-mix(in srgb, var(--cv, var(--acc)) 16%, transparent); }
+[data-palette="light"] .nf-title .a { text-shadow: 4px 4px 0 color-mix(in srgb, var(--acc) 16%, transparent); }
+[data-palette="light"] .rd-banner-w { text-shadow: 3px 3px 0 color-mix(in srgb, var(--cv, var(--acc)) 14%, transparent); }
+[data-palette="light"] .md-diagram-art { text-shadow: none; }
 [data-palette="light"] .rofi-box, [data-palette="light"] .tw { box-shadow: 8px 8px 0 rgba(93, 77, 51, 0.25); }
-[data-palette="light"] .toast { box-shadow: 6px 6px 0 rgba(93, 77, 51, 0.22); }
-/* posts list: the selected row floats ON the paper instead of sinking */
-[data-palette="light"] .pd-list .p-row.sel {
-  background: color-mix(in srgb, #fff 75%, var(--panel));
-  box-shadow: 4px 4px 0 rgba(93, 77, 51, 0.22);
+[data-palette="light"] .toast { box-shadow: 8px 8px 0 rgba(93, 77, 51, 0.25); }
+/* the two that were still dropping pitch-black onto paper */
+[data-palette="light"] .nf-art { filter: drop-shadow(3px 3px 0 rgba(93, 77, 51, 0.28)); }
+[data-palette="light"] .ab-ava { filter: none; }   /* the About mascot is unshadowed, like fetch's */
+[data-palette="light"] .md-diagram-zoom { box-shadow: 8px 8px 0 rgba(60, 48, 30, 0.3); }
+/* CRT scanlines: ink-alpha on bright paper (white-alpha is invisible here) */
+[data-palette="light"] .md-code-pre {
+  background-image: repeating-linear-gradient(to bottom, rgba(60, 48, 30, 0.03) 0 1px, transparent 1px 3px);
 }
-/* the file-manager's folders and documents float on the paper the same way */
-[data-palette="light"] .fm-dir, [data-palette="light"] .fm-file {
+/* the file-manager's folders: a lighter card on the paper, flat (documents are
+   unboxed tree leaves — they keep the base transparent / panel2 hover wash) */
+[data-palette="light"] .fm-dir {
   background: color-mix(in srgb, #fff 55%, var(--panel));
-  box-shadow: 2px 2px 0 rgba(93, 77, 51, 0.08);
 }
-[data-palette="light"] .fm-dir:hover, [data-palette="light"] .fm-file:hover {
+[data-palette="light"] .fm-dir:hover, [data-palette="light"] .fm-dir:focus-visible {
   background: color-mix(in srgb, #fff 70%, var(--panel));
 }
+[data-palette="light"] .fm-up { --tc: var(--line2); background: none; }   /* "../" gets no paper card (hover wash below still wins) */
 [data-palette="light"] .fm-dir[aria-expanded="true"],
 [data-palette="light"] .fm-dir[aria-current="page"] {
-  background: color-mix(in srgb, var(--tc, var(--acc)) 9%, color-mix(in srgb, #fff 55%, var(--panel)));
+  background: color-mix(in srgb, var(--tc, var(--acc)) 10%, color-mix(in srgb, #fff 55%, var(--panel)));
 }
 /* the preview's dark peek glass gets the same ink treatment as .md-code */
-[data-palette="light"] .pv-peek {
-  border-color: color-mix(in srgb, var(--text) 40%, var(--line2));
-  border-left-color: var(--tc, var(--line2));
-  box-shadow: 3px 3px 0 rgba(60, 48, 30, 0.25);
+[data-palette="light"] .pv-body, [data-palette="light"] .pv-eof {
+  background-image: repeating-linear-gradient(to bottom, rgba(60, 48, 30, 0.03) 0 1px, transparent 1px 3px);
 }
-/* pager / stat cards float too, keeping their hover tint */
-[data-palette="light"] .stat { background: color-mix(in srgb, #fff 45%, var(--panel2)); }
-
 /* ==================================================================== */
 /*  404 — kernel panic                                                   */
 /* ==================================================================== */
@@ -2197,144 +2760,294 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   inset: 0;
   z-index: 99990;
   background: #050505;
-  color: #b8b8a8;
+  background-image: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
+  color: var(--dim);
   font-family: var(--mono);
   font-size: clamp(11.5px, 1.6vw, 14px);
   line-height: 1.75;
-  padding: clamp(16px, 5vw, 60px);
+  padding: var(--edge);
+  padding-top: calc(var(--barh) + var(--sp-4));   /* the panic is fixed under the top bar */
   overflow: auto;
 }
-.panic .t { color: #e8e6d9; font-weight: 700; }
-.panic .r { color: #fb4934; font-weight: 700; }
-.panic .g { color: #b8bb26; }
-.panic .y { color: #fabd2f; }
-.panic .d { color: #6a6a5e; }
-.panic a { color: #83a598; text-decoration: underline; text-underline-offset: 2px; }
-.panic a:hover { background: #83a598; color: #050505; }
+.panic .t { color: var(--text); font-weight: 800; }
+.panic .r { color: var(--acc); font-weight: 800; }
+.panic .g { color: var(--green); }
+.panic .y { color: var(--yellow); }
+.panic .d { color: var(--mute); }
+.panic a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.panic a:hover, .panic a:focus-visible { background: var(--link); color: #050505; }
 .panic pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+/* Skelamton's face beside the trace; it stacks above it on a phone */
+.panic-row { display: flex; align-items: flex-start; gap: var(--sp-6); }
+.panic-face { flex: none; }
+.panic-face svg { display: block; }
+.panic-row pre { min-width: 0; }
+@media (max-width: 600px) { .panic pre { white-space: pre; overflow-x: auto; } }
+@media (max-width: 640px) {
+  .panic-row { flex-direction: column; gap: var(--sp-4); }
+  .panic-face svg { width: 80px; height: 80px; }
+}
+/* light palette: the panic prints on paper — same grammar, term tokens */
+[data-palette="light"] .panic { background: var(--term); background-image: repeating-linear-gradient(to bottom, rgba(60, 48, 30, 0.03) 0 1px, transparent 1px 3px); }
+[data-palette="light"] .panic .r { color: var(--acc); }
+[data-palette="light"] .panic .g { color: var(--green); }
+[data-palette="light"] .panic .y { color: var(--yellow); }
+[data-palette="light"] .panic a { color: var(--link); }
+[data-palette="light"] .panic a:hover, [data-palette="light"] .panic a:focus-visible { background: var(--link); color: var(--term); }
 
 /* ==================================================================== */
 /*  THEME.CONF (tweaks)                                                  */
 /* ==================================================================== */
 .tw {
   position: fixed;
-  top: calc(var(--barh) + 10px);
-  right: 14px;
+  top: calc(var(--barh) + var(--sp-3));     /* same anchor as .toast — they align */
+  right: var(--edge);
   z-index: 9600;
-  width: min(292px, calc(100vw - 28px));
+  width: min(272px, calc(100vw - 2 * var(--edge)));
   background: var(--panel);
   border: 2px solid var(--acc);
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
-  animation: rofi-in 0.1s steps(2, end) both;
+  box-shadow: 8px 8px 0 rgba(var(--sh), 0.35);
+  animation: rofi-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.tw-bd { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-.tw-lb { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); margin-bottom: 8px; }
-.tw-pal { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* two key–value rows, like the conf file it pretends to be */
+.tw-bd { padding: var(--sp-3) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
+.tw-pal { display: flex; gap: var(--sp-2); }
 .tw-pal button {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--dim);
-  background: var(--panel2);
+  gap: var(--sp-2);
+  padding: 1px 10px;                 /* the sm-button metric, like .pgr */
+  font-family: var(--px);
+  font-size: var(--px-1);
+  line-height: var(--lh-chrome);
+  font-weight: 400;
+  color: var(--text);
+  background: none;
   border: 1px solid var(--line2);
 }
-.tw-pal button i { width: 13px; height: 13px; background: var(--sw); }
-.tw-pal button:hover { border-color: var(--acc); color: var(--text); }
-.tw-pal button[aria-pressed="true"] { border-color: var(--acc); color: var(--acc); background: color-mix(in srgb, var(--acc) 10%, var(--panel2)); }
-.tw-row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 700; color: var(--dim); }
-.tw-tgl {
-  width: 40px; height: 18px;
-  position: relative;
-  border: 1px solid var(--line2);
-  background: var(--panel2);
+.tw-pal button:hover, .tw-pal button:focus-visible { border-color: var(--acc); color: var(--acc); }
+.tw-pal button[aria-pressed="true"] { background: color-mix(in srgb, var(--acc) 12%, transparent); border-color: var(--acc); color: var(--text); }
+.tw-row { display: flex; align-items: center; justify-content: space-between; font-family: var(--px); font-size: var(--px-1); line-height: var(--lh-chrome); font-weight: 400; color: var(--dim); }
+
+/* ==================================================================== */
+/*  SCROLLBARS — square and themed, one recipe per surface rank: chrome    */
+/*  scrolls on --line2 and answers red;   terminal glass scrolls on its    */
+/*  own ink and answers the code voice. No rounded pills (this is a pixel  */
+/*  desk) and the thumb is inset by a transparent border, so it reads as   */
+/*  a bar sitting in a gutter instead of a stripe glued to the edge.       */
+/* ==================================================================== */
+* { scrollbar-width: thin; scrollbar-color: var(--line2) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }   /* the pixel desk has no OS arrows */
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;     /* the inset gutter */
+  background-clip: padding-box;
+  background: var(--line2);
 }
-/* touch: grow the tiny close/toggle hitboxes without changing the pixels */
-.tw .win-dots > a { position: relative; }
-.tw .win-dots > a::after { content: ""; position: absolute; inset: -12px; }
-.tw-tgl::after { content: ""; position: absolute; inset: -12px 0; }
-.tw-tgl i {
-  position: absolute;
-  top: 1px; left: 1px;
-  width: 16px; height: 14px;
-  background: var(--mute);
-  transition: transform 0.1s steps(2);   /* compositor-only, never layout */
+::-webkit-scrollbar-thumb:hover, ::-webkit-scrollbar-thumb:active { background: var(--acc); }
+/* the preview pane scrolls on paper: its gutter reads as a pane edge */
+.pv-in::-webkit-scrollbar-track { border-left: 1px solid var(--line); }
+/* terminal glass — code blocks, the About shell, tables, ascii/mermaid art
+   and the zoom dialog all scroll in the code's own ink */
+.md-code-pre, .term-scroll, .md-table, .md-diagram-art,
+.md-diagram-zoom-body, .md-mermaid {
+  scrollbar-color: color-mix(in srgb, var(--term-txt) 34%, transparent) transparent;
 }
-.tw-tgl[aria-checked="true"] { border-color: var(--acc); }
-.tw-tgl[aria-checked="true"] i { transform: translateX(20px); background: var(--acc); }
+.md-code-pre::-webkit-scrollbar-thumb, .term-scroll::-webkit-scrollbar-thumb,
+.md-table::-webkit-scrollbar-thumb,
+.md-diagram-art::-webkit-scrollbar-thumb,
+.md-diagram-zoom-body::-webkit-scrollbar-thumb,
+.md-mermaid::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--term-txt) 34%, transparent);
+}
+.md-code-pre::-webkit-scrollbar-thumb:hover, .term-scroll::-webkit-scrollbar-thumb:hover,
+.md-table::-webkit-scrollbar-thumb:hover,
+.md-diagram-art::-webkit-scrollbar-thumb:hover,
+.md-diagram-zoom-body::-webkit-scrollbar-thumb:hover,
+.md-mermaid::-webkit-scrollbar-thumb:hover { background: var(--term-acc); }
+/* a horizontally scrolling code block gets a hairline lid, so the bar never
+   looks like it is floating inside the code text */
+.md-code-pre::-webkit-scrollbar-track:horizontal {
+  border-top: 1px solid color-mix(in srgb, var(--term-txt) 14%, transparent);
+}
 
 /* ---- press states — instant pixel-press, no transitions ---------------- */
-.btn:active, .ws-btn:active { transform: translate(1px, 1px); }
+/* ONE list, so nothing on this desktop can be clicked without answering.
+   Kept last in the file: it has to outrank every component's own :active. */
+.btn:active,
+.ws-btn:active,
+.bar-ico:active,
+.chip:active, .tagchip:active, .pd-chip:active,
+.md-code-btn:active, .md-img-open:active,
+.tw-pal button:active,
+.pgr button:not(:disabled):active,
+.p-more:active, .md-code-more:active,
+button.ol-item:active, .rofi-item:active,
+.fm-dir:active, .fm-file:active,
+.p-row:active, .cbar:active,
+.rd-pgr:active, .rd-rel-r:active,
+.stl-file:active, .stl .ol-btn:active, .stl-pct:active { transform: translate(1px, 1px); }
 
 /* ==================================================================== */
 /*  RESPONSIVE                                                           */
 /* ==================================================================== */
-@media (max-width: 1080px) {
+/* Bold Pixels display sizes switch STEP at a breakpoint — it is pixel-crisp
+   only at 16 / 32 / 48 / 64, so there is no fluid in between:
+     hero      64 desktop · 48 tablet · 32 phone
+     titles    48 · 48 · 32  (page titles, article title, banner word)       */
+@media (max-width: 1239px) {
+  :root { --fs-hero: var(--px-3); --lh-hero: 56px; }
+}
+@media (max-width: 980px) {
+  .ws-btn:not(.on) .t { display: none; }        /* icons; the focused one keeps its name */
+}
+@media (max-width: 1140px) { :root { --edge: 32px; } }
+@media (max-width: 760px) {
+  :root { --fs-hero: var(--px-2); --lh-hero: 36px; --fs-display: var(--px-2); --lh-display: 36px;
+          --edge: 16px; --gap: 16px; --gut: 16px; }
+  .rd-banner-w { font-size: var(--px-2); }
+  .rd-banner { height: 96px; }                  /* the 32px word keeps 30px of air and the body starts 32px higher */
+  .rd-pager { flex-direction: column; }         /* two 156px cards truncated both titles — stack them full width */
+  .rd-pager > span { display: none; }           /* a missing neighbour holds no empty row once stacked */
+  /* 32px display: a 3-4px offset is a whole glyph pixel and reads as a doubled print */
+  .nf-title { text-shadow: 2px 2px 0 color-mix(in srgb, var(--acc) 30%, transparent); }
+  .nf-title .a { text-shadow: 2px 2px 0 color-mix(in srgb, var(--acc) 22%, transparent); }
+  .ph-title { text-shadow: 2px 2px 0 color-mix(in srgb, var(--cv, var(--acc)) 26%, transparent); }
+  .ph-title .nowrap { text-shadow: 2px 2px 0 color-mix(in srgb, var(--cv, var(--acc)) 22%, transparent); }
+  [data-palette="light"] .nf-title, [data-palette="light"] .ph-title { text-shadow: 2px 2px 0 color-mix(in srgb, var(--cv, var(--acc)) 14%, transparent); }
+  [data-palette="light"] .nf-title .a { text-shadow: 2px 2px 0 color-mix(in srgb, var(--acc) 16%, transparent); }
+  [data-palette="light"] .ph-title .nowrap { text-shadow: 2px 2px 0 color-mix(in srgb, var(--cv, var(--acc)) 16%, transparent); }
+  .rd-paper::before { display: none; }          /* phones: no ~ rail */
+  .rd-paper { padding: var(--sp-5) var(--gut) var(--sp-8); }
+  .rd-col { margin-inline: 0; }                 /* the buffer starts on the name-line edge */
+  /* the 16px gutter leaves a 2px inset that read as a step under the
+     full-bleed fzf band — rows go edge to edge, text stays on the gutter */
+  .pd-list { padding-inline: 0; }
+  .pd-list .p-row { padding-inline: calc(var(--gut) - 2px); }
+  .pd-list .pgr { padding-inline: var(--gut); }
+}
+@media (max-width: 1140px) {
   .pd { grid-template-columns: 1fr; }
   .pv { display: none; }
   .pd-list { border-right: none; }   /* no doubled edge once .pv is gone */
   .pv-only { display: none; }        /* chrome that talks about the preview */
 }
-@media (max-width: 1040px) {
+@media (max-width: 1140px) {
   .hm {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "hero" "side" "list";
+    grid-template-areas: "hero" "list" "side";
   }
-  .hm-side { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  /* monitor holds the tall left cell; tags + keys stack beside it */
+  .hm-side {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-areas: "mon tags" "mon keys";
+  }
+  .hm-side .w-mon  { grid-area: mon; }
+  .hm-side .w-tags { grid-area: tags; }
+  .hm-side .w-keys { grid-area: keys; }
   .w-keys > .win-body { display: flex; }
   .w-keys .nf-rows { flex: 1; justify-content: space-evenly; }
 }
-@media (max-width: 860px) {
-  .rd-cols { grid-template-columns: 1fr; }
-  .ol { display: none; }
-  .rd-paper { border-right: none; }
+@media (max-width: 1140px) {
+  .rd-frame { grid-template-columns: 1fr; }
+  .rd-side { display: none; }
   .stl .ol-btn {                               /* sidebar gone → drawer takes over */
     display: inline-block;
     flex: none;
-    padding: 4px 12px;
-    font-size: 11.5px;
+    padding: var(--sp-1) var(--sp-3);
+    font-size: var(--px-1);
     color: var(--dim);
     border-left: 1px solid var(--line);
   }
   .stl .ol-btn:hover { color: var(--acc); }
 }
 @media (max-width: 760px) {
-  .hm-side { grid-template-columns: 1fr; }
-  .bar-menu, .ws-btn { height: 40px; }  /* the 48px bar has room — use it */
-  .ws-btn { padding: 0 12px; }
+  .hm-side { grid-template-columns: 1fr; grid-template-areas: "mon" "tags" "keys"; }
+  /* the bar blocks run the full 48px height, so they are big tap targets;
+     launcher + five 40px workspace blocks + the theme switch fit a 375px phone */
+  .bar-brand { display: none; }                  /* phones: the mascot alone */
+  /* icon-only on a phone: the icon is a true 24px square, the focused
+     workspace is still the red block */
+  .ws-btn { padding: 0 8px; }
   .ws-btn .t { display: none; }
+  /* phones: a 12px bar inset would sit 4px off the 16px content rail and read as a
+     misalignment — the bar text joins the rail instead */
+  .win-tbar { padding-inline: var(--gut); }
   .bar-seg.s-clock { display: none; }
   .bar-ico { display: none; }        /* tray files hide; rofi still lists them */
-  #bar-conf { display: inline-flex; }   /* …except the theme switch */
+  #bar-conf { display: inline-flex; padding: 0 12px; }   /* …except the theme switch */
   .bar-tray .bar-sep { display: none; } /* no orphan separators */
-  .p-cat { grid-row: 2; align-self: end; }
   .p-read { display: none; }
-  .prg { display: none; }
   .stl-keys { display: none; }       /* phones keep mode + file + % only */
   .nf-rows .k { width: 76px; }
+  /* phone: the mascot (4 cells of 16x17) rides beside the headline, the
+     fetch table takes the full width below */
+  .w-fetch > .win-body { grid-template-areas: "title art" "lede lede" "cta cta" "info info"; column-gap: var(--sp-3); }
+  .w-fetch .nf-art { align-self: center; margin-right: 0; }
+  .w-fetch .nf-art :is(svg, .av-img) { width: 64px; height: 68px; }
   /* fonts ≥16px or iOS zooms the whole desktop on focus */
   .fzf-bar input, .rofi-input input { font-size: 16px; }
   .fzf-bar kbd, .kbd-hint { display: none; }
-  /* posts list: hand back the wide gutters */
-  .fzf-bar, .pd-chips { padding-left: 16px; padding-right: 16px; }
-  .pd-list { padding: 12px 12px 16px; }
-  /* hero title must fit a ~300px content box */
-  .nf-title { font-size: clamp(20px, 6.8vw, 28px); }
-  .cbar { grid-template-columns: fit-content(45%) minmax(0, 1fr) 32px; gap: 8px; }
+  .cbar { gap: var(--sp-2); }
   .md-code-path b { display: none; } /* path alone fits narrow screens */
-  /* categories file manager: tighter gutters, shallower indent */
-  .fm-bar { padding: 8px 16px; gap: 12px; }
-  .fm-tree { padding: 0 16px; }
-  .fm-node .fm-panel { margin-left: 12px; }
-  .fm > .rel { padding-left: 16px; padding-right: 16px; }
   .fm-dd { display: none; }  /* phones: folder name + count only */
+}
+@media (max-width: 760px) {
+  /* narrow screens: the bar is ONE row — path left, counters in the right
+     corner (never trailing the path, where they read as part of its name);
+     the path stays whole, the status yields (truncates, secondary spans hide) */
+  .win-tbar { flex-wrap: nowrap; }
+  .win-tbar-t { flex: none; max-width: 70%; }   /* the path stays whole (capped); counters and the program yield */
+  .win-status + .win-app { display: none; }   /* no room for both: the counters carry the facts, the program label steps out */
+  .win-status { flex: 0 2 auto; min-width: 0; overflow: hidden; flex-wrap: nowrap; }
+  .win-status > * { overflow: hidden; text-overflow: ellipsis; }
+  .win-status > span:not(:first-child) { display: none; }
 }
 /* touch devices: filter chips need real tap targets */
 @media (pointer: coarse) {
-  .pd-chip { padding: 8px 12px; }
-  .pd-chips { gap: 8px; }
+  /* The controls got smaller for the eye; on a thumb they stay 44. Where a
+     control can grow without shoving its neighbours it grows for real; where
+     it can't, an invisible bleed does the reaching. */
+  .pd-chips { gap: var(--sp-2); }
+  /* the CTA family: 4×12 draws 30px, 1×10 draws 24 — min-height pays the
+     difference honestly, since these sit in wrapping rows where a bleed
+     would eat the row below */
+  .btn, .btn.sm { min-height: 44px; }
+  .pgr button, .tw-pal button { min-height: 44px; }
+  /* the 48px bar can't grow, so the workspace buttons take the room it has:
+     40px tall + 2px of invisible bleed each side = 44, and 44 wide at least.
+     Pointer-fine desktops keep the full-height 48px bar blocks as drawn. */
+  .bar-menu, .ws-btn { height: 40px; }
+  .ws-btn { min-width: 44px; justify-content: center; }
+  .ws-btn::before { content: ""; position: absolute; inset: -2px 0; }
+  /* the tray icons ride the same 44×44 floor — on phones #bar-conf is the
+     only one left, and it's the theme switch: the worst one to miss */
+  .bar-ico { position: relative; width: 44px; height: 40px; }
+  .bar-ico::after { content: ""; position: absolute; inset: -2px 0; }
+  /* the reader's chrome buttons: 22×18 is a thumb's miss. Grown for real
+     (a pseudo hit-area would have swallowed the 4px gap between them). */
+  .md-code-tools { gap: var(--sp-2); }
+  .md-code-btn, .md-img-open { position: relative; width: 34px; height: 30px; }
+  .md-code-btn::after, .md-img-open::after { content: ""; position: absolute; inset: -7px 0; }
+  .stl-file, .stl .ol-btn, .stl-pct { padding: 10px 12px; }
+  .rofi-item { padding: var(--sp-3) var(--sp-4); }
+  a.chip::before, .tagchip::before, .pd-chip::before, .cg-h a::before { content: ""; position: absolute; inset: -8px -4px; }
+}
+/* touch: no j/k selection concept exists, so the first row can't be left
+   looking permanently pressed — .sel resets back to a plain .p-row */
+@media (hover: none) {
+  .pd-list .p-row.sel {
+    background: transparent;
+    border-left-color: transparent;
+    box-shadow: none;
+  }
+  .pd-list .p-row.sel .p-title { color: var(--text); }
+  [data-palette="light"] .pd-list .p-row.sel {
+    background: transparent;
+    box-shadow: none;
+  }
 }
 @media print {
   .win, .toast { animation: none !important; }
@@ -2351,4 +3064,10 @@ html[data-zoom="out"] .dt-foot { opacity: 0; transition: opacity 0.12s; }
   }
   .caret { animation: none; opacity: 1; }
   .tcur { animation: none; }
+  /* the nuke above gives EVERY element a real (0.01ms) `transition: all`, and
+     a style change then reads back its OLD value until the next frame —
+     mermaid sets its 13px font on the scratch node and measures the labels in
+     the same tick, so it measured 14px text and every viewBox came out wrong.
+     The scratch node (id "d" + the svg id "mmd-…") must stay transition-free. */
+  [id^="dmmd-"], [id^="dmmd-"] * { transition: none !important; }
 }

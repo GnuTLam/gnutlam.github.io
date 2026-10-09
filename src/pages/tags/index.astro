@@ -1,15 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { TOPICS, topicOf } from '../../data/topics';
-import { getPublishedPosts } from '../../data/posts';
+import { getPublishedPosts, tagCounts } from '../../data/posts';
 import { SITE, pageTitle } from '../../data/site';
+import { EMPTY_SKULL } from '../../data/empty';
 
 const posts = await getPublishedPosts();
 
 /* every tag with its count + the tone of its parent category */
-const tagCounts = new Map<string, number>();
-for (const p of posts) for (const t of p.tags) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
-const tags = [...tagCounts.entries()]
+const tags = [...tagCounts(posts).entries()]
   .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
   .map(([tag, n]) => ({
     tag, n,
@@ -17,13 +16,11 @@ const tags = [...tagCounts.entries()]
     cat: topicOf([tag]),
     s: n >= 3 ? 3 : n === 2 ? 2 : 1,
   }));
-const max = tags[0]?.n ?? 0;
 
 /* group by parent category, in TOPICS order — reads like `tree` output */
 const groups = TOPICS
   .map(tp => ({ tp, tags: tags.filter(t => t.cat.key === tp.key) }))
   .filter(g => g.tags.length > 0);
-const maxG = Math.max(1, ...groups.map(g => g.tags.length));
 ---
 
 <BaseLayout
@@ -34,16 +31,17 @@ const maxG = Math.max(1, ...groups.map(g => g.tags.length));
   <div class="pg">
   <section class="win focus" aria-label="Tags">
     <header class="win-tbar">
-      <span class="win-tbar-t"><b>~/tags</b> — grep -c</span>
-      <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/" title="close → main" aria-label="Close and return home"></a></span>
+      <span class="win-tbar-t"><b>~/tags</b></span>
+      <div class="win-status">
+        <span role="status"><b id="tag-count">{tags.length}</b> tag(s)</span>
+      </div>
+      <span class="win-app">grep -c</span>
     </header>
 
     <div class="ph">
-      <h1 class="ph-title">TAG <span class="a">INDEX</span></h1>
+      <h1 class="ph-title">TAG <span class="nowrap">INDEX<span class="caret" aria-hidden></span></span></h1>
       <p class="ph-sub">
-        {tags.length} tags across {posts.length} posts, sized by frequency and grouped by their parent
-        <a href="/categories/" style="color: var(--link); text-decoration: underline">category</a>.
-        Open a tag to see every post carrying it.
+        Grouped by parent <a href="/categories/">category</a>; open a tag to see its posts.
       </p>
     </div>
 
@@ -58,29 +56,20 @@ const maxG = Math.max(1, ...groups.map(g => g.tags.length));
         <div class="cg" style={`--tc: ${g.tp.tone}`}>
           <p class="cg-h">
             <a href={`/categories/${g.tp.key}/`}>{g.tp.title.toLowerCase()}/</a>
-            <span class="cg-m" aria-hidden>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <i class={i < Math.max(1, Math.round((g.tags.length / maxG) * 8)) ? 'on' : ''}></i>
-              ))}
-            </span>
             <span class="n">{g.tags.length} tag{g.tags.length === 1 ? '' : 's'}</span>
           </p>
           <div class="cloud">
             {g.tags.map(t => (
-              <a class="tagchip" href={`/tags/${t.tag}/`} data-s={t.s} data-tag={t.tag} data-cat={`${g.tp.key} ${g.tp.title.toLowerCase()}`} style={`--tc: ${t.tone}`} title={`${t.cat.title} · ${t.n} post${t.n === 1 ? '' : 's'}`}>
+              <a class="tagchip" href={`/tags/${t.tag}/`} data-s={t.s} data-tag={t.tag} data-cat={`${g.tp.key} ${g.tp.title.toLowerCase()}`} style={`--tc: ${t.tone}`} title={`${t.cat.title.toLowerCase()} · ${t.n} post${t.n === 1 ? '' : 's'}`}>
                 <b>#{t.tag}</b><span class="n">{t.n}</span>
               </a>
             ))}
           </div>
         </div>
       ))}
-      <div class="p-empty" id="tag-empty" hidden>no tag matched — try another term.</div>
+      <div class="p-empty" id="tag-empty" hidden><span class="p-empty-ico" aria-hidden set:html={EMPTY_SKULL} />grep: no tag matches</div>
     </div>
 
-    <div class="win-status">
-      <span class="grow" role="status"><b id="tag-count">{tags.length}</b> tag(s) · most used: <b>#{tags[0]?.tag}</b> ({max})</span>
-      <span>sort: -count</span>
-    </div>
   </section>
   </div>
 

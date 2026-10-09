@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { TOPICS, topicOf } from '../../data/topics';
+import { topicOf, countByTopic } from '../../data/topics';
+import { EMPTY_SKULL } from '../../data/empty';
 import type { PostData } from '../../types';
 
 /* a post plus the first lines of its body, for the preview pane */
-export type PostPeek = PostData & { peek: string[]; more: number };
+type PostPeek = PostData & { peek: string[]; more: number };
 
 interface Props { posts: PostPeek[]; }
 
-const PAGE = 8;                       /* posts per page, less-style pager */
+const PAGE = 5;                       /* posts per page, less-style pager — one full screen */
 
 export default function PostsShell({ posts }: Props) {
   const [query, setQuery] = useState('');
@@ -18,11 +19,7 @@ export default function PostsShell({ posts }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
 
   /* counted the same way the filter cuts (topicOf) — counts match results */
-  const cats = useMemo(
-    () => TOPICS.map(t => ({ ...t, n: posts.filter(p => topicOf(p.tags).key === t.key).length }))
-      .filter(t => t.n > 0),
-    [posts]
-  );
+  const cats = useMemo(() => countByTopic(posts), [posts]);
 
   const needle = query.trim().toLowerCase();
   const filtered = useMemo(() => {
@@ -54,6 +51,46 @@ export default function PostsShell({ posts }: Props) {
       ?.scrollIntoView({ block: 'nearest' });
   }, [sel, page]);
 
+  /* the list never shrinks under FIVE rows: a short page or filter leaves
+     room at the bottom. Rows wrap to any height on narrow screens, so the
+     reserve is measured — a full page's real height, else five average
+     rows until a full page has been seen — and redone when the width (or
+     the webfont) changes. ≥1141px the CSS reserve is the SSR fallback. */
+  const fit = useRef({ w: 0, h: 0, exact: false, pgr: 37 });
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const remeasure = () => { fit.current.w = -1; setTick(t => t + 1); };
+    /* width only — the min-height this sets must not re-trigger it */
+    const ro = new ResizeObserver(() => { if (list.clientWidth !== fit.current.w) remeasure(); });
+    ro.observe(list);
+    document.fonts?.ready.then(remeasure);
+    return () => ro.disconnect();
+  }, []);
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const f = fit.current;
+    if (f.w !== list.clientWidth) Object.assign(f, { w: list.clientWidth, h: 0, exact: false });
+    const rows = Array.from(list.querySelectorAll<HTMLElement>('.p-row'));
+    if (rows.length === PAGE || (rows.length > 0 && !f.exact)) {
+      list.style.minHeight = '';
+      const natural = list.getBoundingClientRect().height;   /* rows + pager + padding, as rendered */
+      if (rows.length === PAGE) Object.assign(f, { h: natural, exact: true });
+      else {
+        /* no full page seen yet: add the missing rows at this page's average */
+        const top = rows[0].getBoundingClientRect().top;
+        const bottom = rows[rows.length - 1].getBoundingClientRect().bottom;
+        const gap = 8;
+        const avg = (bottom - top - gap * (rows.length - 1)) / rows.length;
+        const pgr = list.querySelector('.pgr') ? 0 : f.pgr;
+        f.h = Math.max(f.h, natural + (avg + gap) * (PAGE - rows.length) + pgr);
+      }
+    }
+    if (f.h > 0) list.style.minHeight = `${f.h}px`;
+  }, [page, filtered, tick]);
+
   /* keyboard: / focus · j/k or ↑/↓ move selection · Enter opens */
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -82,7 +119,7 @@ export default function PostsShell({ posts }: Props) {
       }
       if (e.key === 'Enter') {
         /* leave Enter alone when a control outside the list owns focus
-           (chips, preview links, titlebar) — it must activate, not navigate.
+           (chips, preview links) — it must activate, not navigate.
            The pager's buttons live inside the list but must also activate. */
         const ae = document.activeElement as HTMLElement | null;
         if (ae && ae !== document.body && ae !== inputRef.current &&
@@ -104,18 +141,21 @@ export default function PostsShell({ posts }: Props) {
   return (
     <section className="win focus" aria-label="All posts">
       <header className="win-tbar">
-        <span className="win-tbar-t"><b>~/posts</b> — fzf<span className="pv-only"> --preview</span> | less</span>
-        <span className="win-dots">
-          <i aria-hidden></i><i aria-hidden></i>
-          <a href="/" title="close → main" aria-label="Close and return home"></a>
-        </span>
+        <span className="win-tbar-t"><b>~/posts</b></span>
+        <div className="win-status">
+          <span role="status">
+            <b>{filtered.length}</b>/{posts.length} post(s)
+            {cat && <> · category: <b>{cat}</b></>}
+          </span>
+          <span className="kbd-hint">↑↓/jk select · <span className="mono">↵</span> open</span>
+        </div>
+        <span className="win-app">fzf<span className="pv-only"> --preview</span> | less</span>
       </header>
 
       <div className="ph">
-        <h1 className="ph-title">POST <span className="a">INDEX</span></h1>
+        <h1 className="ph-title">POST <span className="nowrap">INDEX<span className="caret" aria-hidden /></span></h1>
         <p className="ph-sub">
-          {posts.length} posts, newest first — deep-dives, post-mortems, and the
-          occasional manifesto. Filter below or pick a category.
+          Newest first — deep‑dives, post‑mortems, and the occasional manifesto.
         </p>
       </div>
 
@@ -148,7 +188,7 @@ export default function PostsShell({ posts }: Props) {
         ))}
         {cat && (
           <button className="pd-chip" onClick={() => { setCat(null); inputRef.current?.focus(); }}>
-            ✕ clear
+            <span className="mono">✕</span> clear
           </button>
         )}
       </div>
@@ -157,8 +197,8 @@ export default function PostsShell({ posts }: Props) {
         <div className="pd-list" ref={listRef}>
           {filtered.length === 0 && (
             <div className="p-empty">
-              &gt; <b>{query}</b><br />
-              nothing matched — try another term or clear the filter.
+              <span className="p-empty-ico" aria-hidden dangerouslySetInnerHTML={{ __html: EMPTY_SKULL }} />
+              fzf: no match for '<b>{query}</b>'
             </div>
           )}
           {filtered.slice(page * PAGE, (page + 1) * PAGE).map((p, pi) => {
@@ -183,7 +223,7 @@ export default function PostsShell({ posts }: Props) {
                   </span>
                   <span className="p-sub">{p.excerpt}</span>
                 </span>
-                <span className="chip p-cat">{t.title.toLowerCase()}</span>
+                <span className="p-cat">{t.title.toLowerCase()}</span>
                 <span className="p-read">{p.read.toLowerCase()}</span>
               </a>
             );
@@ -194,7 +234,7 @@ export default function PostsShell({ posts }: Props) {
                 type="button"
                 disabled={page === 0}
                 onClick={() => { setPage(page - 1); setSel((page - 1) * PAGE); }}
-              >← prev</button>
+              >:prev</button>
               <span className="pgr-lb" role="status">
                 -- page {page + 1}/{pages} (posts {page * PAGE + 1}–{Math.min((page + 1) * PAGE, filtered.length)} of {filtered.length}) --
               </span>
@@ -202,36 +242,28 @@ export default function PostsShell({ posts }: Props) {
                 type="button"
                 disabled={page >= pages - 1}
                 onClick={() => { setPage(page + 1); setSel((page + 1) * PAGE); }}
-              >next →</button>
+              >:next</button>
             </nav>
           )}
         </div>
 
         <aside className="pv" aria-label="Post preview">
-          <div className="pv-head">
-            <span>PREVIEW</span>
-            <span className="f">{selPost ? `bat posts/${selPost.slug}.md` : 'bat --style=numbers'}</span>
-          </div>
           {selPost && tp ? (
             <div key={selPost.slug} className="pv-in" style={{ '--tc': tp.tone } as React.CSSProperties}>
               <h2 className="pv-title">{selPost.title}</h2>
-              <div className="pv-meta">
-                <span className="chip" style={{ '--tc': tp.tone } as React.CSSProperties}>{tp.title.toLowerCase()}</span>
-                <span>{selPost.date}</span>
-                <span>·</span>
-                <span>{selPost.read.toLowerCase()}</span>
-              </div>
-              <p className="pv-x">{selPost.excerpt}</p>
               {selPost.peek.length > 0 && (
                 <div className="pv-peek">
-                  {selPost.peek.map((ln, i) => (
-                    <div key={i} className="pv-ln">
-                      <span className="n" aria-hidden>{i + 1}</span>
-                      <span className="t">{ln}</span>
-                    </div>
-                  ))}
+                  <div className="pv-bar"><b>bat</b><span className="f">posts/{selPost.slug}.md</span></div>
+                  <div className="pv-body">
+                    {selPost.peek.map((ln, i) => (
+                      <div key={i} className="pv-ln">
+                        <span className="n" aria-hidden>{i + 1}</span>
+                        <span className="t">{ln}</span>
+                      </div>
+                    ))}
+                  </div>
                   <div className="pv-eof" aria-hidden>
-                    ~ {selPost.more > 0 ? `+${selPost.more} more paragraph${selPost.more === 1 ? '' : 's'} — ` : ''}⏎ open in nvim
+                    ~{selPost.more > 0 ? ` +${selPost.more} more paragraph${selPost.more === 1 ? '' : 's'}` : ''}
                   </div>
                 </div>
               )}
@@ -243,24 +275,15 @@ export default function PostsShell({ posts }: Props) {
                 ))}
               </div>
               <a className="btn pri sm pv-open" href={`/posts/${selPost.slug}/`}>
-                $ nvim {selPost.slug}.md
+                $ open
               </a>
             </div>
           ) : (
-            <div className="pv-empty">select a post to preview it here</div>
+            <div className="pv-empty">~</div>
           )}
         </aside>
       </div>
 
-      <div className="win-status">
-        <span className="grow" role="status">
-          <b>{filtered.length}</b>/{posts.length} post(s)
-          {pages > 1 && <> · page <b>{page + 1}</b>/{pages}</>}
-          {cat && <> · category: <b>{cat}</b></>}
-        </span>
-        <span className="pv-only">{selPost ? `${Math.min(sel, filtered.length - 1) + 1}/${filtered.length}` : '--'}</span>
-        <span className="kbd-hint">↑↓/jk select · ↵ open</span>
-      </div>
     </section>
   );
 }

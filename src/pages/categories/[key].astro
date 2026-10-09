@@ -2,31 +2,26 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import FolderCard from '../../components/static/FolderCard.astro';
 import FileCard from '../../components/static/FileCard.astro';
-import { TOPICS, topicOf } from '../../data/topics';
-import { getPublishedPosts } from '../../data/posts';
+import { topicOf } from '../../data/topics';
+import { getPublishedPosts, categoriesWithPosts, readMinutes, tagCounts } from '../../data/posts';
 import { pageTitle } from '../../data/site';
 
 export async function getStaticPaths() {
-  const posts = await getPublishedPosts();
-  const cats = TOPICS
-    /* topicOf, not tag-overlap — must agree with the categories window */
-    .map(t => ({ ...t, matches: posts.filter(p => topicOf(p.tags).key === t.key) }))
-    .filter(t => t.matches.length > 0)
-    /* busiest first — same order as the categories window's sidebar */
-    .sort((a, b) => b.matches.length - a.matches.length);
-  /* the places sidebar lists every sibling folder, like a real nautilus */
+  const cats = categoriesWithPosts(await getPublishedPosts());
+  /* the tree lists every sibling folder, with the current one expanded */
   const siblings = cats.map(c => ({ key: c.key, tone: c.tone, desc: c.desc, count: c.matches.length }));
   return cats.map(t => ({ params: { key: t.key }, props: { cat: t, posts: t.matches, siblings } }));
 }
 
 const { cat, posts, siblings } = Astro.props;
-const sorted = [...posts].sort((a, b) => (a.iso < b.iso ? 1 : -1));
-const mins = posts.reduce((n, p) => n + (parseInt(p.read, 10) || 0), 0);
+const mins = readMinutes(posts);
+/* the caret rides the last word so it can never wrap onto a line of its own */
+const cut = cat.title.lastIndexOf(' ') + 1;
+const titleLead = cat.title.slice(0, cut);
+const titleTail = cat.title.slice(cut);
 
 /* tags actually used by posts in this category, with counts */
-const tagCounts = new Map<string, number>();
-for (const p of posts) for (const t of p.tags) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
-const usedTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]);
+const usedTags = [...tagCounts(posts).entries()].sort((a, b) => b[1] - a[1]);
 ---
 
 <BaseLayout
@@ -37,24 +32,21 @@ const usedTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]);
   <div class="pg">
   <section class="win focus" aria-label={cat.title} style={`--tc: ${cat.tone}; --cv: ${cat.tone}`}>
     <header class="win-tbar">
-      <span class="win-tbar-t"><b>~/categories/{cat.key}</b> — nautilus</span>
-      <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/categories/" title="close → categories" aria-label="Close and return to categories"></a></span>
+      <span class="win-tbar-t"><b>~/categories/{cat.key}</b></span>
+      <div class="win-status">
+        <span><b>{posts.length}</b> {posts.length === 1 ? 'file' : 'files'} · du -h: {mins} min</span>
+      </div>
+      <span class="win-app">nautilus</span>
     </header>
 
     <div class="ph">
       <h1 class="ph-title" style={`--cv: ${cat.tone}`}>
-        <span style={`color: ${cat.tone}`}>{cat.title}</span>
+        {titleLead}<span class="nowrap">{titleTail}<span class="caret" aria-hidden></span></span>
       </h1>
       <p class="ph-sub">{cat.desc}</p>
     </div>
 
     <div class="fm">
-      <div class="fm-bar">
-        <span class="fm-nav"><a href="/categories/" title="Back to all categories" aria-label="Back to all categories">◂</a><i aria-hidden>▸</i><i aria-hidden>⟳</i></span>
-        <span class="fm-path"><a href="/">~</a><i aria-hidden>›</i><a href="/categories/">categories</a><i aria-hidden>›</i><b>{cat.key}</b></span>
-        <span class="fm-info">{posts.length} file{posts.length === 1 ? '' : 's'} · {mins} min</span>
-      </div>
-
       <!-- the same vertical tree as the categories window: "../" on top,
            every sibling folder as a bar, and the current one expanded with
            its contents right below it -->
@@ -73,7 +65,7 @@ const usedTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]);
             {s.key === cat.key && (
               <div class="fm-panel">
                 <div class="fm-files">
-                  {sorted.map(p => <FileCard post={p} />)}
+                  {posts.map(p => <FileCard post={p} />)}
                 </div>
               </div>
             )}
@@ -83,18 +75,14 @@ const usedTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]);
 
       <div class="rel">
         <span>tags in here:</span>
-        {usedTags.map(([tag, n]) => (
+        {usedTags.map(([tag]) => (
           <a class="tagchip" href={`/tags/${tag}/`} style={`--tc: ${topicOf([tag]).tone}`}>
-            <b>#{tag}</b><span class="n">{n}</span>
+            <b>#{tag}</b>
           </a>
         ))}
       </div>
     </div>
 
-    <div class="win-status">
-      <span class="grow"><b>{posts.length}</b> post(s) in {cat.key}/</span>
-      <a href="/categories/" style="color: var(--dim)">cd .. → all categories</a>
-    </div>
   </section>
   </div>
 </BaseLayout>

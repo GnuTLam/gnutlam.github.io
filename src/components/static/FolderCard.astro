@@ -17,8 +17,11 @@ interface Props {
 }
 
 const { href, name, count, desc, tone, class: className, ...rest } = Astro.props;
-const closed = pxSvg(FOLDER_CLOSED, FM_PAL, 30);
-const open = pxSvg(FOLDER_OPEN, FM_PAL, 30);
+/* 28, not 30: the art is now 14x11 instead of 14x9, so the same width would
+   have grown the row. 28 keeps the bar height where it was and still reads
+   as a folder rather than a slab. */
+const closed = pxSvg(FOLDER_CLOSED, FM_PAL, 28);
+const open = pxSvg(FOLDER_OPEN, FM_PAL, 28);
 ---
 
 <a

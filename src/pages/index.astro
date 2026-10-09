@@ -3,8 +3,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import HomeShell from '../components/islands/HomeShell';
 import { getPublishedPosts } from '../data/posts';
 import { SITE } from '../data/site';
+import { HOME } from '../data/content';
+import { checkAvatar } from '../data/avatar';
+
+checkAvatar('home', HOME.avatar);
 
 const posts = await getPublishedPosts();
+/* the island's first render must match this prerendered HTML, so it gets the
+   build date instead of reading the clock itself */
+const builtOn = new Date().toISOString().slice(0, 10);
 
 const siteURL = Astro.site?.href ?? SITE.url;
 const websiteJsonLd = {
@@ -23,5 +30,5 @@ const websiteJsonLd = {
   activeNav="main"
   jsonLd={websiteJsonLd}
 >
-  <HomeShell posts={posts} client:idle />
+  <HomeShell posts={posts} builtOn={builtOn} client:idle />
 </BaseLayout>

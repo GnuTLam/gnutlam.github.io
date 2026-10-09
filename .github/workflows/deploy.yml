@@ -1,9 +1,10 @@
 # Build & deploy to GitHub Pages on every push to master.
-# One-time setup on GitHub:
-#   1. Settings → Pages → Source: "GitHub Actions"
-#   2. (Optional) Settings → Secrets and variables → Actions → Variables:
-#      SITE_URL  = https://<username>.github.io  (or custom domain)
-#      BASE_PATH = /            (or /repo-name for a project site)
+# One-time setup on GitHub (see README → Deploy):
+#   1. The repository must be named <username>.github.io — the site is served
+#      from the root of its domain (BASE_PATH other than / fails the build).
+#   2. Settings → Pages → Source: "GitHub Actions"
+#   3. (Optional) Settings → Secrets and variables → Actions → Variables:
+#      SITE_URL = a custom domain origin (default: site.url in blog.config.ts)
 name: Deploy to GitHub Pages
 
 on:
@@ -31,6 +32,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Build with Astro
         uses: withastro/action@v3
+        with:
+          node-version: 22
 
   deploy:
     needs: build

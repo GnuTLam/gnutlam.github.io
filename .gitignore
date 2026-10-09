@@ -16,7 +16,8 @@ pnpm-debug.log*
 .env
 .env.production
 
-# editor / local machine
+# editor / local machine / AI-tool state — never part of the site
 .DS_Store
 .idea/
-.claude/settings.local.json
+.claude/
+.kiro/

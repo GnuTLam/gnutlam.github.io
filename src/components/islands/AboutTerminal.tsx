@@ -1,5 +1,6 @@
 import { createElement, useEffect, useRef, useState, type ReactNode } from 'react';
-import { SITE, OS_FULL, PROMPT } from '../../data/site';
+import { SITE, PROMPT } from '../../data/site';
+import { ABOUT } from '../../data/content';
 
 /* AboutTerminal — the side window is a real shell. Every command answers
    from build-time data passed in as props; nothing is faked at runtime. */
@@ -17,7 +18,6 @@ export default function AboutTerminal({ now, links, posts, stats }: Props) {
   /* deterministic banner — identical on server and client, so hydration
      is clean and no-JS visitors still see the now-jobs */
   const banner: ReactNode[] = [
-    <div className="tl dim" key="b0">{OS_FULL} — /dev/pts/0</div>,
     <div className="tl dim" key="b1">last write: {posts[0]?.iso ?? '--'} · {stats.posts} logged</div>,
     <div className="tl" key="b2">{NBSP}</div>,
     <div className="tl dim" key="b3"># now — watch -n 60</div>,
@@ -40,7 +40,7 @@ export default function AboutTerminal({ now, links, posts, stats }: Props) {
   }, [out]);
 
   const echo = (raw: string) => (
-    <div className="tl"><span className="tp"><b>{PROMPT}</b>:~/about$ </span>{raw}</div>
+    <div className="tl"><span className="tp"><b>{PROMPT}</b>:<span className="tpp">~/about</span>$ </span>{raw}</div>
   );
   /* spread children through createElement — static children need no keys */
   const line = (...kids: ReactNode[]) => createElement('div', { className: 'tl' }, ...kids);
@@ -65,8 +65,8 @@ export default function AboutTerminal({ now, links, posts, stats }: Props) {
 
       case 'whoami':
         return [
-          line(`${SITE.user} — IT engineer, infrastructure.`),
-          line(<span className="dim">payments ledgers · agent orchestrators · terabyte pipelines</span>),
+          line(`${SITE.user}: ${ABOUT.role}`),
+          line(<span className="dim">{ABOUT.description}</span>),
         ];
 
       case 'now':
@@ -95,9 +95,9 @@ export default function AboutTerminal({ now, links, posts, stats }: Props) {
 
       case 'stats':
         return [
-          line(<span className="tk">{'signal'.padEnd(8)}</span>, <span className="sig">{stats.spark}</span>,
+          line(<span className="tk">{'signal'.padEnd(10)}</span>, <span className="sig">{stats.spark}</span>,
             <span className="dim">  {stats.streak}mo up · {stats.idle}mo idle</span>),
-          line(<span className="tk">{'log'.padEnd(8)}</span>,
+          line(<span className="tk">{'log'.padEnd(10)}</span>,
             `${stats.posts} writes · ${stats.mins} min · ~${stats.pace}/month`),
         ];
 
@@ -107,9 +107,9 @@ export default function AboutTerminal({ now, links, posts, stats }: Props) {
         (window as unknown as { crtFlip?: () => void }).crtFlip?.();
         document.documentElement.setAttribute('data-palette', p);
         try {
-          const t = JSON.parse(localStorage.getItem('lamdev-tweaks') || '{}');
+          const t = JSON.parse(localStorage.getItem('gnut-tweaks') || '{}');
           t.palette = p;
-          localStorage.setItem('lamdev-tweaks', JSON.stringify(t));
+          localStorage.setItem('gnut-tweaks', JSON.stringify(t));
         } catch { /* private mode */ }
         window.dispatchEvent(new CustomEvent('tweaks:sync'));
         return line(`phosphor set to ${p}.`);
@@ -192,10 +192,10 @@ export default function AboutTerminal({ now, links, posts, stats }: Props) {
           className="term-in"
           onSubmit={e => { e.preventDefault(); run(val); setVal(''); }}
         >
-          <span className="tp"><b>{PROMPT}</b>:~/about$&nbsp;</span>
+          <span className="tp"><b>{PROMPT}</b>:<span className="tpp">~/about</span>$&nbsp;</span>
           <input
             ref={inRef}
-            style={{ width: `${Math.max(1, val.length)}ch` }}
+            style={{ width: `${val.length}ch` }}
             value={val}
             onChange={e => setVal(e.target.value)}
             onKeyDown={onKey}

@@ -1,28 +1,37 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { PROMPT, pageTitle } from '../../data/site';
+import { EMPTY_SKULL } from '../../data/empty';
 ---
 <BaseLayout title={pageTitle('/dev/null')} description="Nothing survives here." activeNav="devnull">
-  <div style="max-width: 720px; margin: 0 auto; min-height: calc(100vh - var(--barh) - 180px); display: grid; align-content: center">
+  <div class="pg">
     <section class="win focus" aria-label="/dev/null">
       <header class="win-tbar">
-        <span class="win-tbar-t"><b>/dev/null</b> — ls</span>
-        <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/" title="close → main" aria-label="Close and return home"></a></span>
+        <span class="win-tbar-t"><b>/dev/null</b></span>
+        <div class="win-status">
+          <span>emptier than expected</span>
+        </div>
+        <span class="win-app">ls</span>
       </header>
-      <div class="win-body" style="font-family: var(--mono)">
-        <p class="ph-path" style="margin: 0 0 12px"><b>{PROMPT}</b>:/$ ls -la /dev/null</p>
-        <p style="margin: 0 0 16px; color: var(--dim)">total 0</p>
-        <p style="margin: 0 0 8px; color: var(--dim)">
-          Every deleted draft, every abandoned take, every <span style="color: var(--accent)">rm -rf</span> regret — it all ends up here.
+      <div class="ph">
+        <h1 class="ph-title"><span class="nowrap">/DEV/NULL<span class="caret" aria-hidden></span></span></h1>
+        <p class="ph-sub">Nothing survives here.</p>
+      </div>
+      <div class="win-body null-body">
+        <div class="null-out">
+          <span class="p-empty-ico" aria-hidden set:html={EMPTY_SKULL} />
+          <div>
+            <p class="ph-path"><b>{PROMPT}</b>:/$ ls -la /dev/null<span class="caret" aria-hidden></span></p>
+            <p class="null-total">total 0</p>
+          </div>
+        </div>
+        <p class="null-p">
+          Every deleted draft, every abandoned take, every <span class="null-rm">rm -rf</span> regret — it all ends up here.
         </p>
-        <p style="margin: 0 0 24px; color: var(--mute)">
-          (Nothing survives. The posts that did are in <a href="/posts/" style="color: var(--link); text-decoration: underline">~/posts</a>.)
+        <p class="null-p">
+          (The ones that survived are in <a class="md-link" href="/posts/">~/posts</a>.)
         </p>
         <a class="btn pri" href="/">$ cd ~</a>
-      </div>
-      <div class="win-status">
-        <span class="grow">0 file(s), 0 byte(s)</span>
-        <span>emptier than expected</span>
       </div>
     </section>
   </div>

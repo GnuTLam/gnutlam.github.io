@@ -1,25 +1,26 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
-const STORAGE_KEY = 'lamdev-tweaks';
+const STORAGE_KEY = 'gnut-tweaks';
 
 const SCHEMES = [
-  { key: 'dark',  sw: '#ffb454', hint: 'amber phosphor' },
-  { key: 'light', sw: '#a8500e', hint: 'beige hardware' },
+  { key: 'dark',  hint: 'red phosphor' },
+  { key: 'light', hint: 'porcelain' },
 ];
 
 function normalize(p: string | undefined): 'dark' | 'light' {
-  return p === 'light' ? 'light' : 'dark';
+  return p === 'dark' ? 'dark' : 'light';
 }
 
-const DEFAULTS = { palette: 'light', scanlines: true };
+const DEFAULTS = { palette: 'light' };
 type Tweaks = typeof DEFAULTS;
 
 function load(): Tweaks {
   if (typeof window === 'undefined') return DEFAULTS;
   try {
-    const t = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') };
-    /* no saved choice → whatever the boot script resolved (OS preference) */
-    t.palette = normalize(t.palette ?? document.documentElement.getAttribute('data-palette') ?? 'light');
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
+    const t = { ...DEFAULTS, ...saved };
+    /* no saved choice → whatever the boot script resolved (light by default) */
+    t.palette = normalize(saved.palette ?? document.documentElement.getAttribute('data-palette') ?? 'light');
     return t;
   } catch {
     return DEFAULTS;
@@ -40,7 +41,6 @@ export default function TweaksPanel() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-palette', t.palette);
-    document.body.setAttribute('data-scanlines', t.scanlines ? 'on' : 'off');
     window.dispatchEvent(new CustomEvent('tweaks:sync'));
   }, [t]);
 
@@ -65,46 +65,43 @@ export default function TweaksPanel() {
     };
   }, []);
 
+  /* no title bar, no ✕ — it closes like a menu: Esc, the tray button, or
+     any click that lands outside (but not the tray toggle, or it reopens) */
+  const boxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Element | null;
+      if (boxRef.current && t && !boxRef.current.contains(t) && !t.closest('#bar-conf')) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [open]);
+
   if (!open) return null;
 
   return (
-    <div className="tw" role="dialog" aria-label="Theme settings">
-      <header className="win-tbar">
-        <span className="win-tbar-t"><b>~/.config/theme.conf</b> — nvim</span>
-        <span className="win-dots">
-          <i aria-hidden></i><i aria-hidden></i>
-          <a role="button" tabIndex={0} onClick={() => setOpen(false)} title="close" aria-label="Close"></a>
-        </span>
-      </header>
+    <div className="tw" role="dialog" aria-label="Theme settings" ref={boxRef}>
       <div className="tw-bd">
-        <div>
-          <div className="tw-lb"># mode</div>
+        <div className="tw-row">
+          # mode
           <div className="tw-pal" role="group" aria-label="Color mode">
             {SCHEMES.map(p => (
               <button
                 key={p.key}
                 aria-pressed={t.palette === p.key}
-                style={{ '--sw': p.sw } as React.CSSProperties}
                 onClick={() => {
                   if (p.key !== t.palette) (window as unknown as { crtFlip?: () => void }).crtFlip?.();
                   set({ palette: p.key });
                 }}
                 title={p.hint}
               >
-                <i aria-hidden></i>{p.key}
+                {p.key}
               </button>
             ))}
           </div>
-        </div>
-        <div className="tw-row">
-          # crt scanlines
-          <button
-            className="tw-tgl"
-            role="switch"
-            aria-checked={t.scanlines}
-            aria-label="CRT scanlines"
-            onClick={() => set({ scanlines: !t.scanlines })}
-          ><i aria-hidden></i></button>
         </div>
       </div>
     </div>

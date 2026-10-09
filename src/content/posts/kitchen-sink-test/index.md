@@ -2,10 +2,8 @@
 id:      10
 title:   "Systems Engineering: A Complete Reference"
 excerpt: "Every block type this renderer supports — typography, callouts, code, diagrams, and more."
-date:    "JUN 04, 2026"
 iso:     "2026-06-04"
 tags:    ["craft", "architecture", "philosophy"]
-read:    "22 MIN READ"
 preview: "SYNTAX"
 draft:   true
 ---
@@ -18,7 +16,7 @@ This is a *comprehensive* test document covering every element this blog rendere
 
 ## Part I — Typography Fundamentals
 
-### 1.1 The Prose Baseline
+### The Prose Baseline
 
 Body text should read at a comfortable density. Paragraphs establish rhythm. After reading two or three paragraphs you should not feel fatigued — the line length, leading, and font weight should conspire to let the eye sweep left-to-right without tracking effort.
 
@@ -26,13 +24,13 @@ Every word should earn its place. **Bold** signals importance; it should be used
 
 The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump. The five boxing wizards jump quickly. Back in my quaint garden, jaunty zinnias vie with flaunting phlox.
 
-#### 1.1.1 Inline Elements
+#### Inline Elements
 
 This paragraph tests every inline element simultaneously. **Bold text** breaks in the middle of a sentence, followed by *italic emphasis*, then `monospace code`, then a [link to somewhere](https://example.com), and finally back to normal prose weight — the transition should be smooth and never jarring.
 
 Testing **nested *emphasis* inside bold** and `code with symbols: fn main() { }` and longer inline code like `pub async fn handle(req: Request<Body>) -> Result<Response<Body>>` which should wrap gracefully within the paragraph.
 
-#### 1.1.2 Paragraph Rhythm
+#### Paragraph Rhythm
 
 Six paragraphs in a row, all the same weight and size, should feel *even*. The spacing between them should be consistent — not tighter after a heading, not looser before the next section. If the rhythm breaks, something in the margin/padding math is off.
 
@@ -50,31 +48,31 @@ Paragraph six. The final paragraph before the next section heading. The space be
 
 ## Part II — Heading Hierarchy in Full
 
-### 2.1 Second-Level Headings
+### Second-Level Headings
 
 The h2 heading above introduces a major section. It carries an accent-color pixel square to its left and a bottom rule. The space above should be generous — this is a chapter-level break.
 
-### 2.2 Third-Level Headings
+### Third-Level Headings
 
 The h3 heading is a teal subsection header with a smaller pixel square. Less vertical space above — it is a subdivision, not a full reset. Read the sequence h2 → body → h3 → body as a natural hierarchy.
 
-### 2.3 Consecutive Subsections
+### Consecutive Subsections
 
 Two or more h3 headings close together should not feel cramped. The space below the preceding body and above the new heading must breathe even when there is no body text between them.
 
-### 2.4 A Fourth Subsection at h3
+### A Fourth Subsection at h3
 
 Four h3 headings in one h2 section validates that the geometry does not break down at scale. The accent square should be consistent across all of them.
 
-#### 2.4.1 Fourth-Level Headings
+#### Fourth-Level Headings
 
 H4 is the smallest named division. No geometric marker — just uppercase mono tracking and a subdued color. Good for sub-paragraphs or named procedures within a step.
 
-#### 2.4.2 Another H4
+#### Another H4
 
 Two consecutive h4 headings should read as a flat list of named items, not a wall of uppercase. The vertical margin above carries the weight.
 
-#### 2.4.3 A Third H4
+#### A Third H4
 
 And a third, to confirm three consecutive h4 headings remain legible and distinct from each other and from body text below.
 
@@ -82,7 +80,7 @@ And a third, to confirm three consecutive h4 headings remain legible and distinc
 
 ## Part III — Lists
 
-### 3.1 Unordered Lists
+### Unordered Lists
 
 Unordered lists use a pixel square bullet aligned to the cap-height of the first line. Multi-line items should keep the bullet on line one.
 
@@ -92,7 +90,7 @@ Unordered lists use a pixel square bullet aligned to the cap-height of the first
 - Fourth item with `inline code` — monospace inside a list item at the correct baseline
 - Fifth item that is deliberately quite long so we can see how the text wraps past the bullet character and stays indented correctly across multiple lines of content in the list body, which is a real-world case in technical documentation
 
-### 3.2 Ordered Lists
+### Ordered Lists
 
 Ordered lists use leading-zero mono counters aligned to the right margin of the gutter.
 
@@ -103,7 +101,7 @@ Ordered lists use leading-zero mono counters aligned to the right margin of the 
 5. Enable write traffic in 5% increments, watching p99 latency and error rate at each step before proceeding
 6. If any gate fails, automated rollback fires — no human decision required in the critical path
 
-### 3.3 Mixed Content in Lists
+### Mixed Content in Lists
 
 Lists often contain mixed content. Here is a list where each item includes a code term and a sentence of explanation.
 
@@ -131,7 +129,7 @@ A multi-paragraph quote keeps the rule continuous. The italic weight distinguish
 
 ## Part V — Code Blocks
 
-### 5.1 Rust — Async Resource Pool
+### Rust — Async Resource Pool
 
 ```rust
 // Async resource pool with backpressure and graceful drain.
@@ -169,7 +167,7 @@ impl<T: Send + 'static> Pool<T> {
 }
 ```
 
-### 5.2 Python — Async Paginator
+### Python — Async Paginator
 
 ```python
 import asyncio
@@ -204,7 +202,7 @@ async def main():
             await process(record)
 ```
 
-### 5.3 SQL — Skew-Aware Aggregation
+### SQL — Skew-Aware Aggregation
 
 ```sql
 -- Window the heavy tenant separately and union back.
@@ -236,7 +234,7 @@ ORDER BY total_bytes DESC
 LIMIT 500;
 ```
 
-### 5.4 Bash — Deployment Script
+### Bash — Deployment Script
 
 ```bash
 #!/usr/bin/env bash
@@ -266,7 +264,7 @@ kubectl rollout status deployment/"${SERVICE}" \
 echo "done"
 ```
 
-### 5.5 JavaScript — Retry with Exponential Backoff
+### JavaScript — Retry with Exponential Backoff
 
 ```javascript
 // Exponential backoff with full jitter — prevents thundering herd on recovery.
@@ -292,7 +290,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 ## Part VI — ASCII Diagrams
 
-### 6.1 Request Flow
+### Request Flow
 
 ```mermaid REQUEST FLOW
 flowchart TD
@@ -308,7 +306,7 @@ flowchart TD
   PG --> R2[("Replica-02 · analytics")]
 ```
 
-### 6.2 Circuit Breaker States
+### Circuit Breaker States
 
 ```mermaid CIRCUIT BREAKER
 stateDiagram-v2
@@ -319,7 +317,7 @@ stateDiagram-v2
   HALF_OPEN --> OPEN : probe fails
 ```
 
-### 6.3 Agent Lifecycle
+### Agent Lifecycle
 
 ```mermaid AGENT LIFECYCLE
 stateDiagram-v2
@@ -334,19 +332,19 @@ stateDiagram-v2
 
 ## Part VII — Images
 
-### 7.1 Architecture Diagram
+### Architecture Diagram
 
 ![architecture-overview](System architecture: API gateway, service mesh, and storage layer)
 
-### 7.2 Performance Graph
+### Performance Graph
 
 ![perf-comparison](Latency distribution p50/p95/p99 before and after the optimisation)
 
-### 7.3 Flame Graph
+### Flame Graph
 
 ![flamegraph](CPU flame graph showing the hot path through the serialization layer — 68% time in serde_json::to_vec)
 
-### 7.4 Dashboard Screenshot
+### Dashboard Screenshot
 
 ![dashboard](Production dashboard — four golden signals at peak traffic, 2026-06-04 14:32 UTC)
 
@@ -354,19 +352,19 @@ stateDiagram-v2
 
 ## Part VIII — Callouts
 
-### 8.1 Note
+### Note
 
 :::note Background context
 The pattern described in this section requires Postgres 13 or later. Earlier versions lack `SKIP LOCKED` on `FOR UPDATE`, which is the entire mechanism that makes this work safely under concurrent load. On Postgres 12, the lock dance produces phantom reads.
 :::
 
-### 8.2 Warning
+### Warning
 
 :::warn Do not do this in production
 Setting `max_connections = 1000` without tuning `shared_buffers`, `work_mem`, and the kernel's `fs.file-max` will exhaust OS file descriptors long before Postgres uses all its connection slots. Your service will silently start refusing new connections with a cryptic "too many open files" error at 3am.
 :::
 
-### 8.3 Tip
+### Tip
 
 :::tip Rule of thumb
 Start with `max_connections = 4 × CPU_cores` and a pool sized to half that. Measure under real load. Most OLTP applications need fewer than 20 connections per replica — a pool hides the surge.
@@ -392,7 +390,7 @@ Third thematic section. Three consecutive rules confirm the renderer handles mul
 
 ## Part X — A Very Long Section
 
-### 10.1 Memory Models
+### Memory Models
 
 Modern CPUs do not execute instructions in the order you wrote them. Neither does the compiler emit code in that order. Neither does the cache coherence protocol propagate writes in that order. The *memory model* of a language defines what guarantees you get despite all of this reordering.
 
@@ -400,7 +398,7 @@ In Rust, the atomics API exposes these guarantees directly: `SeqCst`, `Acquire`,
 
 The rule of thumb: use `SeqCst` until you understand why you need something weaker, then benchmark before you change it. Premature optimisation of memory orderings is a category of bug that takes days to reproduce in a test harness and minutes to cause data corruption in production.
 
-#### 10.1.1 Acquire/Release Pairs
+#### Acquire/Release Pairs
 
 The most common pattern is an `Acquire` load paired with a `Release` store. A mutex is exactly this: the unlock is a `Release` store that publishes all writes made while holding the lock; the next lock is an `Acquire` load that reads all those writes.
 
@@ -424,15 +422,15 @@ fn consumer(data: &u64) -> u64 {
 }
 ```
 
-#### 10.1.2 Relaxed Loads
+#### Relaxed Loads
 
 Relaxed ordering provides no synchronization guarantees — only atomicity. It is appropriate for counters that do not gate any other memory access: metrics, hit counts, statistics. Using Relaxed for a flag that guards a data structure is undefined behaviour.
 
-#### 10.1.3 Sequential Consistency
+#### Sequential Consistency
 
 `SeqCst` provides a single total order across all `SeqCst` operations on all threads. It is the strongest guarantee and typically the most expensive on weakly-ordered ISAs (ARM, POWER). On x86, which is already strongly ordered, `SeqCst` stores compile to a locked exchange and cost about the same as `Release`.
 
-### 10.2 Latency Percentiles
+### Latency Percentiles
 
 Latency is not normally distributed. Averages hide the tail. Your p50 can be excellent while your p99 is alarming your largest customers — because the tenants hitting the slow path are exactly the ones with the largest data sets, longest sessions, or most complex queries.
 
@@ -442,7 +440,7 @@ The *shape* of the distribution matters as much as the level. A bimodal distribu
 
 Histograms are more honest than percentile summaries. A histogram retains the shape; a percentile summary discards it. If your metrics system allows it, store histograms and compute percentiles at query time. HdrHistogram, Prometheus native histograms, and DDSketch all trade off accuracy, memory, and mergeability differently — pick the one that matches your query latency, not the one with the prettiest dashboard.
 
-### 10.3 Connection Pooling
+### Connection Pooling
 
 Every database connection is a file descriptor, a kernel socket buffer pair, a backend process (in Postgres), and a shared memory segment reference. The overhead is non-trivial. A service that opens a connection per request will saturate the database's connection capacity long before it saturates the database's query capacity.
 
@@ -468,7 +466,7 @@ async def create_pool() -> asyncpg.Pool:
 
 With 5 application replicas and `max_size=20`, the maximum Postgres connection count is 100. A PgBouncer in transaction mode can reduce this further: each application connection maps to a database connection only while a query is executing, multiplying the effective connection capacity by `1 / avg_query_duration_in_seconds`.
 
-### 10.4 Circuit Breakers
+### Circuit Breakers
 
 A circuit breaker wraps a downstream call and tracks its failure rate over a sliding window. When the failure rate exceeds a threshold, it trips and starts failing calls immediately — without even attempting the downstream request — until a probe interval passes and a test call succeeds.
 
@@ -478,7 +476,7 @@ The circuit breaker prevents a slow or failing downstream from consuming your th
 A circuit breaker that trips on a 5% error rate during a brief network hiccup will cause more damage than the original downstream issue. Tune the window size and threshold against the real failure signatures of your dependencies — not theoretical values from a tutorial.
 :::
 
-### 10.5 The Four Golden Signals
+### The Four Golden Signals
 
 Google's SRE book names four signals that together describe the health of any service:
 
@@ -489,7 +487,7 @@ Google's SRE book names four signals that together describe the health of any se
 
 Each signal should have a dashboard pane, an alerting threshold, and — critically — an SLO. Alerts that fire without SLO context are noise; alerts that fire on SLO burn rate are signal.
 
-### 10.6 Database Indexing Fundamentals
+### Database Indexing Fundamentals
 
 An index is a data structure that allows the database to find rows without scanning the entire table. The most common type is a B-tree, which supports equality, range, and sort operations in O(log n) time. A hash index supports only equality in O(1) but cannot range-scan.
 
@@ -506,13 +504,13 @@ WHERE status != 'cancelled';  -- partial index: skip rows we never query
 
 The `CONCURRENTLY` keyword builds the index without holding a write lock on the table — essential on production tables with ongoing traffic. The partial index predicate reduces the index size by excluding rows that never appear in the query's WHERE clause.
 
-#### 10.6.1 Index Bloat
+#### Index Bloat
 
 Postgres uses MVCC: old row versions are not deleted immediately. They accumulate until VACUUM reclaims them. Index entries for dead tuples are not reclaimed during a normal index scan — they persist until VACUUM processes the index. On write-heavy tables, indexes bloat faster than the heap.
 
 Monitor index bloat with `pgstatindex`; rebuild bloated indexes with `REINDEX CONCURRENTLY` during low-traffic windows.
 
-#### 10.6.2 Query Planning
+#### Query Planning
 
 The query planner chooses an execution plan based on table statistics. Stale statistics lead to bad plans: a planner that thinks a table has 1,000 rows when it has 10,000,000 will choose a sequential scan when an index scan would be 1,000x faster.
 
@@ -522,7 +520,7 @@ Run `ANALYZE` regularly. Set `autovacuum_analyze_scale_factor = 0.01` on large t
 
 ## Part XII — Tables & Task Lists
 
-### 12.1 Pipe Tables
+### Pipe Tables
 
 Tables render on the terminal glass with a box-drawing grid. The header row carries the phosphor accent; alignment markers in the separator row are honored.
 
@@ -540,7 +538,7 @@ A second, smaller table checks that `inline code` and **bold** survive inside ce
 | `jit`             | on      | disable for OLTP — **always**   |
 | `synchronous_commit` | on   | relax only for ephemeral data   |
 
-### 12.2 Task Lists
+### Task Lists
 
 Rollout checklist — completed items strike through and dim:
 
@@ -554,7 +552,7 @@ Rollout checklist — completed items strike through and dim:
 
 ## Part XI — Wrapping Up
 
-### 11.1 Checklist
+### Checklist
 
 All elements tested in this document:
 
@@ -573,7 +571,7 @@ All elements tested in this document:
 - Horizontal rules (multiple in sequence)
 - Very long prose sections for reading-comfort validation
 
-### 11.2 Final Thought
+### Final Thought
 
 > Good design is not about adding things. It is about removing everything that is not necessary, and then being ruthless about the line between necessary and nice-to-have.
 

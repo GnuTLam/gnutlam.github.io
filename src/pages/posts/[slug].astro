@@ -2,15 +2,15 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ReaderInteractive from '../../components/islands/ReaderInteractive';
-import { isPublished, toPostData } from '../../data/posts';
+import { isPublished, toPostData, byNewest } from '../../data/posts';
+import { topicOf } from '../../data/topics';
 import { SITE, pageTitle } from '../../data/site';
+import { resolveImages } from '../../data/images';
 import type { PostData } from '../../types';
 
 export async function getStaticPaths() {
   const entries = (await getCollection('posts')).filter(isPublished);
-  const posts: PostData[] = entries
-    .map(toPostData)
-    .sort((a, b) => (a.iso < b.iso ? 1 : -1)); // newest first
+  const posts: PostData[] = entries.map(toPostData).sort(byNewest);
 
   return entries.map(entry => ({
     params: { slug: entry.id },
@@ -19,7 +19,8 @@ export async function getStaticPaths() {
 }
 
 const { entry, posts } = Astro.props;
-const source = entry.body ?? '';
+/* relative image paths → bundled URLs; the first image doubles as the share image */
+const { body: source, cover } = resolveImages(entry.body ?? '', entry.id);
 
 const post: PostData = toPostData(entry);
 
@@ -28,9 +29,16 @@ const idx      = posts.findIndex(p => p.slug === post.slug);
 const prevPost = idx > 0             ? posts[idx - 1] : null;
 const nextPost = idx < posts.length - 1 ? posts[idx + 1] : null;
 
+// see-also: newest siblings from the same category (topicOf), never self and
+// never the prev/next posts (the pager already links them)
+const related = posts
+  .filter(p => p.slug !== post.slug && p.slug !== prevPost?.slug && p.slug !== nextPost?.slug
+    && topicOf(p.tags).key === topicOf(post.tags).key)
+  .slice(0, 3);
+
 const siteURL      = Astro.site?.href ?? SITE.url;
 const canonicalURL = new URL(`/posts/${post.slug}/`, siteURL).href;
-const ogImage      = new URL('/og-default.png', siteURL).href;
+const ogImage      = new URL(cover ?? '/og-default.png', siteURL).href;
 const author       = SITE.domain;
 
 const blogPostingJsonLd = {
@@ -54,6 +62,7 @@ const blogPostingJsonLd = {
   description={post.excerpt}
   activeNav="posts"
   canonical={canonicalURL}
+  image={ogImage}
   ogType="article"
   publishedTime={post.iso}
   author={author}
@@ -65,6 +74,7 @@ const blogPostingJsonLd = {
     source={source}
     prevPost={prevPost}
     nextPost={nextPost}
+    related={related}
     client:load
   />
 </BaseLayout>

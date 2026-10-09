@@ -6,13 +6,16 @@ import { SITE, OS_SHORT, PROMPT } from '../../data/site';
 
 const LIVE = SOCIALS.filter(s => s.href !== '#');
 const YEAR = new Date().getFullYear();
+const built = new Date().toISOString().slice(0, 10);
 ---
 <footer class="dt-foot">
   <span class="ps">
     <b>{PROMPT}</b>:<span class="path" id="ft-path">~</span>$ <span id="ft-cmd">fetch --blog</span><span class="caret" aria-hidden></span>
   </span>
   <nav class="right" aria-label="Elsewhere">
-    <span>{OS_SHORT} · © {SITE.since}—{YEAR} · astro</span>
+    {/* every fixed word comes from blog.config.ts (osName/osVer, since); the
+        engine is already named once, on fetch's Kernel line */}
+    <span>{OS_SHORT} · © {SITE.since}–{YEAR} · built&nbsp;<time datetime={built}>{built}</time></span>
     {LIVE.map(s => (
       <a href={s.href}>{s.label.toLowerCase()}</a>
     ))}

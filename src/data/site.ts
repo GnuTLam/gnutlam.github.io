@@ -1,43 +1,40 @@
-/* LAM/OS identity — the single source of truth for every name, version,
-   prompt, and <title> on the site. Change a value here and every page,
-   window title, status bar, and meta tag follows.
+/* GNUT/OS identity — every name, version, prompt and <title> on the site is
+   composed from ONE place: the values live in blog.config.ts, the derived
+   strings below. Change a value there and every page, window tab, status
+   bar, and meta tag follows.
 
    Naming conventions enforced across ALL pages (reuse these verbatim):
-   - window title = "<b>path</b> — app", where path is ALWAYS a real
-     filesystem path: workspace windows mirror the URL ("/" → ~,
-     "/posts/" → ~/posts, "/categories/rust/" → ~/categories/rust);
-     app windows use the path the app actually reads (/proc — btop,
-     ~/.config/sxhkdrc — bat, /dev/pts/0 — zsh, ~/posts/<slug>.md — nvim)
-   - the bold path in a title bar is always accent-colored; focus is
-     signalled by the window border, never by the title color
-   - every workspace opens with one pixel <h1 class="ph-title"> whose
-     trailing segment is accent (<span class="a">): POST INDEX,
-     CATEGORIES, TAG INDEX, WHOAMI; detail pages tint with the category
-     tone instead
-   - no breadcrumbs inside windows — the title bar already carries the
+   - window tab = "<b>path</b> app" (the i3 title tab on the tile's frame),
+     where path is ALWAYS a real filesystem path: workspace windows mirror
+     the URL ("/" → ~, "/posts/" → ~/posts, "/categories/rust/" →
+     ~/categories/rust); app windows use the path the app actually reads
+     (/proc — btop, ~/.config/sxhkdrc — bat, /dev/pts/0 — zsh,
+     ~/posts/<slug>.md — nvim)
+   - focus is signalled by the tile's frame and its tab: red fill on the
+     focused window, the neutral border tone on the rest
+   - every workspace opens with one pixel <h1 class="ph-title"> in a single
+     ink colour ending in the accent terminal caret (<span class="caret">): POST INDEX,
+     CATEGORIES, TAG INDEX, WHOAMI; detail pages keep the same ink and let the
+     category tone tint only the tick and the glow
+   - no breadcrumbs inside windows — the window tab already carries the
      path (the nautilus address bar is app chrome, not a breadcrumb)
-   - every subpage <title> is built with pageTitle() */
+   - every subpage <title> is built with pageTitle()
+   - vocabulary registers: prose (ph-sub, ledes) and nav speak human —
+     "posts", "categories", "tags"; window CHROME (window tabs, status
+     counters, fm labels) speaks its app's language (nautilus: folders/files,
+     grep: file(s) matched, neofetch: packages, zsh: writes) — never mix
+     the two registers on the same surface
+   - localStorage keys and window globals use the "gnut" prefix */
 
-export const SITE = {
-  domain:   'lam.dev',                /* brand + <title> suffix           */
-  user:     'lam',
-  host:     'lamos',
-  osName:   'LAM/OS',
-  osVer:    '7.4',
-  osFlavor: 'linux edition',
-  kernel:   'astro-6.4-static',       /* matches the real astro major     */
-  since:    2021,                     /* first post / © start year        */
-  tagline:  'IT Field Notes on LAM/OS',
-  description:
-    'An information technology field journal — systems, networks, infrastructure, and code, served from a riced Linux desktop.',
-  url:      'https://lamdev.github.io/',   /* fallback only — the deployed
-                                              origin is SITE_URL in .env    */
-};
+import config from '../../blog.config';
+
+/* all values live in blog.config.ts — edit there, never here */
+export const SITE = config.site;
 
 /* derived strings — compose once, import everywhere */
 export const OS_FULL  = `${SITE.osName} ${SITE.osVer} (${SITE.osFlavor})`;
 export const OS_SHORT = `${SITE.osName} v${SITE.osVer}`;
 export const PROMPT   = `${SITE.user}@${SITE.host}`;
 
-/* "<page> — <section> — lam.dev" — the one subpage title pattern */
+/* "<page> — <section> — gnut.dev" — the one subpage title pattern */
 export const pageTitle = (...crumbs: string[]) => [...crumbs, SITE.domain].join(' — ');

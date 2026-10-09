@@ -2,10 +2,8 @@
 id:      1
 title:   "Engineering Made Invisible"
 excerpt: "The best infrastructure is the one you never see — a manifesto on systems that disappear."
-date:    "MAY 22, 2026"
 iso:     "2026-05-22"
 tags:    ["philosophy", "systems", "craft"]
-read:    "4 MIN READ"
 preview: "INVISIBLE"
 ---
 

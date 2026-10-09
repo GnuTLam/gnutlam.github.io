@@ -2,14 +2,22 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AboutTerminal from '../../components/islands/AboutTerminal';
 import { SOCIALS } from '../../data/nav';
-import { getPublishedPosts } from '../../data/posts';
+import { getPublishedPosts, readMinutes } from '../../data/posts';
 import { HACKER, HACKER_PAL, pxSvg } from '../../data/pixel';
-import { SITE, PROMPT, pageTitle } from '../../data/site';
-import { ABOUT, em } from '../../data/content';
+import { SITE, pageTitle } from '../../data/site';
+import { ABOUT, MASCOT, em } from '../../data/content';
+import { checkAvatar } from '../../data/avatar';
+
+checkAvatar('about', ABOUT.avatar);
 
 /* drafts stay browsable in dev, but the about stats only log real writes */
-const posts = (await getPublishedPosts()).filter(p => !p.draft);
-const mins = posts.reduce((n, p) => n + (parseInt(p.read, 10) || 0), 0);
+const published = await getPublishedPosts();
+const posts = published.filter(p => !p.draft);
+const mins = readMinutes(posts);
+
+/* the stack links to /tags/<t>/ only when that page exists — the same set
+   tags/[tag].astro builds its routes from; anything else is plain text */
+const liveTags = new Set(published.flatMap(p => p.tags));
 
 /* writing cadence — posts bucketed by month, first write → build month,
    capped at the 12 most recent months */
@@ -51,26 +59,28 @@ const STATS = {
   <div class="pg ab">
     <section class="win focus w-id" aria-label="About">
       <header class="win-tbar">
-        <span class="win-tbar-t"><b>~/about</b> — whoami</span>
-        <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/" title="close → main" aria-label="Close and return home"></a></span>
+        <span class="win-tbar-t"><b>~/about</b></span>
+        <span class="win-app">whoami</span>
       </header>
 
       <div class="ph">
-        <h1 class="ph-title">WHO<span class="a">AMI</span><span class="caret" aria-hidden></span></h1>
+        <h1 class="ph-title"><span class="nowrap">WHOAMI<span class="caret" aria-hidden></span></span></h1>
       </div>
 
       <div class="win-body">
         <div class="ab-intro">
-          <span class="nf-art ab-ava" set:html={pxSvg(HACKER, HACKER_PAL, 204)} />
+          {ABOUT.avatar === MASCOT
+            ? <span class="nf-art ab-ava" set:html={pxSvg(HACKER, HACKER_PAL, 204)} />
+            : <span class="nf-art ab-ava"><img class="av-img" src={ABOUT.avatar} alt={SITE.user} width="208" height="221" /></span>}
           <div class="ab-lede">
-            <p class="ab-name"><b>{SITE.user}</b><span class="h">@{SITE.domain}</span></p>
+            <p class="ab-name"><b>{SITE.user}</b><span class="h">@{SITE.host}</span></p>
             <p class="ab-role">{ABOUT.role}</p>
             {ABOUT.bio.map(p => (
               <p class="ab-p">{em(p).map(s => s.b ? <strong>{s.t}</strong> : s.t)}</p>
             ))}
             <p class="ab-stack">
               <span class="k">stack</span>
-              {ABOUT.stack.map(t => <a href={`/tags/${t}/`}>{t}</a>)}
+              {ABOUT.stack.map(t => liveTags.has(t) ? <a href={`/tags/${t}/`}>{t}</a> : <span class="s">{t}</span>)}
             </p>
           </div>
         </div>
@@ -81,16 +91,15 @@ const STATS = {
         </div>
       </div>
 
-      <div class="win-status">
-        <span class="grow">{PROMPT}:~$ whoami --long</span>
-        <span>0.01s</span>
-      </div>
     </section>
 
     <section class="win w-side" aria-label="Interactive shell">
       <header class="win-tbar">
-        <span class="win-tbar-t"><b>/dev/pts/0</b> — zsh</span>
-        <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><i aria-hidden></i></span>
+        <span class="win-tbar-t"><b>/dev/pts/0</b></span>
+        <div class="win-status">
+          <span>status: <b>{ABOUT.status}</b></span>
+        </div>
+        <span class="win-app">zsh</span>
       </header>
 
       <AboutTerminal
@@ -101,10 +110,6 @@ const STATS = {
         stats={STATS}
       />
 
-      <div class="win-status">
-        <span class="grow">status: <b>{ABOUT.status}</b></span>
-        <span>type <b>help</b></span>
-      </div>
     </section>
   </div>
 </BaseLayout>

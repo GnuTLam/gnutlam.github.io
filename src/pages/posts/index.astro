@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostsShell from '../../components/islands/PostsShell';
-import { isPublished, toPostData } from '../../data/posts';
+import { isPublished, toPostData, byNewest } from '../../data/posts';
 import { SITE, pageTitle } from '../../data/site';
 
 /* first readable paragraphs of a post body, one line each — the preview
@@ -30,7 +30,7 @@ function peekOf(body: string): { lines: string[]; more: number } {
 const entries = (await getCollection('posts')).filter(isPublished);
 const posts = entries
   .map(e => { const pk = peekOf(e.body ?? ''); return { ...toPostData(e), peek: pk.lines, more: pk.more }; })
-  .sort((a, b) => (a.iso < b.iso ? 1 : -1));
+  .sort(byNewest);
 ---
 
 <BaseLayout

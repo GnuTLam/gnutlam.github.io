@@ -2,21 +2,11 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import FolderCard from '../../components/static/FolderCard.astro';
 import FileCard from '../../components/static/FileCard.astro';
-import { TOPICS, topicOf } from '../../data/topics';
-import { getPublishedPosts } from '../../data/posts';
+import { getPublishedPosts, categoriesWithPosts, readMinutes } from '../../data/posts';
 import { SITE, pageTitle } from '../../data/site';
 
 const posts = await getPublishedPosts();
-const cats = TOPICS.map(t => {
-  /* topicOf, not tag-overlap: every file lives in exactly ONE directory */
-  const matches = posts
-    .filter(p => topicOf(p.tags).key === t.key)
-    .sort((a, b) => (a.iso < b.iso ? 1 : -1));
-  return { ...t, matches };
-})
-  .filter(t => t.matches.length > 0)
-  /* busiest directories first — like `du | sort -r` */
-  .sort((a, b) => b.matches.length - a.matches.length);
+const cats = categoriesWithPosts(posts);
 ---
 
 <BaseLayout
@@ -27,26 +17,23 @@ const cats = TOPICS.map(t => {
   <div class="pg">
   <section class="win focus" aria-label="Categories">
     <header class="win-tbar">
-      <span class="win-tbar-t"><b>~/categories</b> — nautilus</span>
-      <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/" title="close → main" aria-label="Close and return home"></a></span>
+      <span class="win-tbar-t"><b>~/categories</b></span>
+      <div class="win-status">
+        <span id="fm-status"><b>{cats.length}</b> folders · <b>{posts.length}</b> files</span>
+        <span>du -h: {readMinutes(posts)} min</span>
+      </div>
+      <span class="win-app">nautilus</span>
     </header>
 
     <div class="ph">
-      <h1 class="ph-title">CATE<span class="a">GORIES</span></h1>
+      <h1 class="ph-title"><span class="nowrap">CATEGORIES<span class="caret" aria-hidden></span></span></h1>
       <p class="ph-sub">
-        {cats.length} folders, {posts.length} files. Every post lives in exactly one category;
-        its <a href="/tags/" style="color: var(--link); text-decoration: underline">tags</a> cut across them.
-        Click a folder to open it right below.
+        Every post lives in exactly one category;
+        its <a href="/tags/">tags</a> cut across them.
       </p>
     </div>
 
     <div class="fm">
-      <div class="fm-bar">
-        <span class="fm-nav" aria-hidden="true"><i>◂</i><i>▸</i><i>⟳</i></span>
-        <span class="fm-path"><a href="/">~</a><i aria-hidden>›</i><b>categories</b></span>
-        <span class="fm-info">{cats.length} folders · {posts.length} files</span>
-      </div>
-
       <!-- one vertical tree: every directory is a full-width bar — the SAME
            bar a folder gets at any depth — and clicking one expands its
            contents right below it. Bars are LINKS so no-JS visitors still
@@ -75,7 +62,6 @@ const cats = TOPICS.map(t => {
             >
               <div class="fm-files">
                 {c.matches.map(p => <FileCard post={p} />)}
-                <a class="fm-open" href={`/categories/${c.key}/`}>open {c.key}/ in its own window →</a>
               </div>
             </div>
           </div>
@@ -83,11 +69,6 @@ const cats = TOPICS.map(t => {
       </div>
     </div>
 
-    <div class="win-status">
-      <span class="grow" id="fm-status"><b>{cats.length}</b> folders · <b>{posts.length}</b> files</span>
-      <span>sort: -posts</span>
-      <span>du -h: {posts.reduce((n, p) => n + (parseInt(p.read, 10) || 0), 0)} min</span>
-    </div>
   </section>
   </div>
 

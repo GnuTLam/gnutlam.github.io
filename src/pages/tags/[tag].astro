@@ -32,30 +32,21 @@ const related = [...siblings.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
   <div class="pg">
   <section class="win focus" aria-label={`Tag ${tag}`} style={`--tc: ${cat.tone}; --cv: ${cat.tone}`}>
     <header class="win-tbar">
-      <span class="win-tbar-t"><b>~/tags/{tag}</b> — grep -rl "#{tag}"</span>
-      <span class="win-dots"><i aria-hidden></i><i aria-hidden></i><a href="/tags/" title="close → tags" aria-label="Close and return to tags"></a></span>
+      <span class="win-tbar-t"><b>~/tags/{tag}</b></span>
+      <div class="win-status">
+        <span><b>{posts.length}</b> {posts.length === 1 ? 'file' : 'files'} matched</span>
+      </div>
+      <span class="win-app">grep -rl "#{tag}"</span>
     </header>
 
     <div class="ph">
       <h1 class="ph-title" style={`--cv: ${cat.tone}`}>
-        <span style={`color: ${cat.tone}`}>#{tag.toUpperCase()}</span>
+        <span class="nowrap">#{tag.toUpperCase()}<span class="caret" aria-hidden></span></span>
       </h1>
       <p class="ph-sub">
-        {posts.length} post{posts.length === 1 ? '' : 's'} carry this tag ·
-        filed under <a href={`/categories/${cat.key}/`} style="color: var(--link); text-decoration: underline">{cat.title.toLowerCase()}</a>
+        Filed under <a href={`/categories/${cat.key}/`}>{cat.title.toLowerCase()}</a>.
       </p>
     </div>
-
-    {related.length > 0 && (
-      <div class="rel">
-        <span>often appears with:</span>
-        {related.map(([t, n]) => (
-          <a class="tagchip" href={`/tags/${t}/`} style={`--tc: ${topicOf([t]).tone}`}>
-            <b>#{t}</b><span class="n">{n}</span>
-          </a>
-        ))}
-      </div>
-    )}
 
     <div class="p-list">
       {posts.map(p => {
@@ -67,17 +58,24 @@ const related = [...siblings.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
               <span class="p-title">{p.pinned && <span class="pin" title="Pinned">★ </span>}{p.title}</span>
               <span class="p-sub">{p.excerpt}</span>
             </span>
-            <span class="chip p-cat">{tp.title.toLowerCase()}</span>
+            <span class="p-cat">{tp.title.toLowerCase()}</span>
             <span class="p-read">{p.read.toLowerCase()}</span>
           </a>
         );
       })}
     </div>
 
-    <div class="win-status">
-      <span class="grow"><b>{posts.length}</b> file(s) matched</span>
-      <a href="/tags/" style="color: var(--dim)">cd .. → all tags</a>
-    </div>
+    {related.length > 0 && (
+      <div class="rel">
+        <span>often appears with:</span>
+        {related.map(([t]) => (
+          <a class="tagchip" href={`/tags/${t}/`} style={`--tc: ${topicOf([t]).tone}`}>
+            <b>#{t}</b>
+          </a>
+        ))}
+      </div>
+    )}
+
   </section>
   </div>
 </BaseLayout>
