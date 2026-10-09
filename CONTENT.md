@@ -164,7 +164,7 @@ Làm một lần:
 2. Nối repo và đẩy code lên:
    ```bash
    git remote add origin https://github.com/GnuTLam/GnuTLam.github.io.git
-   git push -u origin master
+   git push -u origin main
    ```
 3. Trên GitHub: **Settings → Pages → Source: GitHub Actions**.
 

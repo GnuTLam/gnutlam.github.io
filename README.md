@@ -68,15 +68,15 @@ root-relative): a user site `https://<username>.github.io` or a custom
 domain. The build refuses any other `BASE_PATH`.
 
 1. Create a repository named **`<username>.github.io`** (here:
-   `GnuTLam.github.io`) and push this project to its `master` branch:
+   `GnuTLam.github.io`) and push this project to its `main` branch:
    ```sh
    git remote add origin https://github.com/GnuTLam/GnuTLam.github.io.git
-   git push -u origin master
+   git push -u origin main
    ```
 2. On GitHub: **Settings → Pages → Build and deployment → Source:
    GitHub Actions**.
 3. `.github/workflows/deploy.yml` builds and deploys on every push to
-   `master` (or run it by hand from the Actions tab).
+   `main` (or run it by hand from the Actions tab).
 
 The site address comes from `blog.config.ts` (`site.url`). To override it
 (e.g. a custom domain) set a repository variable `SITE_URL`, or `SITE_URL`

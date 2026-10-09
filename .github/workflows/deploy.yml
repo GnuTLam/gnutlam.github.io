@@ -1,4 +1,4 @@
-# Build & deploy to GitHub Pages on every push to master.
+# Build & deploy to GitHub Pages on every push to main.
 # One-time setup on GitHub (see README → Deploy):
 #   1. The repository must be named <username>.github.io — the site is served
 #      from the root of its domain (BASE_PATH other than / fails the build).
@@ -9,7 +9,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
